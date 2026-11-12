@@ -6,7 +6,7 @@
 
 > **Disclaimer: independent project, public and synthetic data only**
 >
-> - **Independent:** I built this project on my own, outside of any job. No employer, state agency, Medicaid program, health plan, or vendor is connected to it, has endorsed it, or has contributed to it.
+> - **Independent:** I built this project on my own time and my own personal computer, outside of any job. No employer, state agency, Medicaid program, health plan, or vendor is connected to it, has endorsed it, or has contributed to it.
 > - **No PHI or PII, ever:** no real patient's health information and no information that could identify a real person (names, SSNs, member IDs, dates of birth, addresses, phone numbers, or anything similar) is used anywhere in this project.
 > - **No Medicaid or agency data:** no claims, member, provider, eligibility, or payment records from any Medicaid program, state agency, or payer are used, and no internal documents, system screenshots, tickets, reports, or business rules from any organization.
 > - **Only two kinds of data:** (1) **public** reference information that anyone can look up, such as standard denial-code numbers and public CMS and NPI registry data, and (2) **synthetic** examples I invented. Any names, IDs, dates, or plans in examples are made up.
