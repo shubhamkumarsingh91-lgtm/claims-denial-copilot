@@ -326,7 +326,7 @@ Two CPT codes billed that cannot be performed in the same session.
 
 ### RJ-022 – Required Diagnosis Code Missing
 **Code:** COD-009  
-**CARC:** 16 (Needs RARC; payer scope: all)  
+**CARC:** 16 + RARC M76 (Confirmed; payer scope: all)  
 **Severity:** High  
 **Sub-Category:** Missing Code
 
@@ -406,7 +406,7 @@ MRI of same body part billed 3 times in 30 days; allowed once per 90 days.
 
 ### RJ-024 – Invalid NDC
 **Code:** COD-011  
-**CARC:** 16 (Needs RARC; payer scope: all)  
+**CARC:** 16 + RARC M119 (Confirmed; payer scope: all)  
 **Severity:** Medium  
 **Sub-Category:** NDC Error
 

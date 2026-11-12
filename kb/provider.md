@@ -86,7 +86,7 @@ Rendering provider's license expired 60 days before service date.
 
 ### RJ-029 – Inactive NPI
 **Code:** PRV-003  
-**CARC:** 208 (Verify; payer scope: all)  
+**CARC:** 208 + RARC N290 (Confirmed; payer scope: all)  
 **Severity:** High  
 **Sub-Category:** NPI Invalid
 
@@ -206,7 +206,7 @@ GP billed a complex neurosurgical procedure.
 
 ### RJ-032 – Invalid Taxonomy Code
 **Code:** PRV-006  
-**CARC:** 16 (Needs RARC; payer scope: all)  
+**CARC:** 16 + RARC N288 (Confirmed; payer scope: all)  
 **Severity:** Low  
 **Sub-Category:** Taxonomy
 
@@ -246,7 +246,7 @@ Submitted taxonomy doesn't match provider's registered specialty.
 
 ### RJ-033 – Provider on Exclusion List
 **Code:** PRV-007  
-**CARC:** B7 (Verify; payer scope: all)  
+**CARC:** B7 (Confirmed; payer scope: all)  
 **Severity:** High  
 **Sub-Category:** Sanctioned Provider
 
@@ -286,7 +286,7 @@ Rendering provider appears on OIG LEIE exclusion list.
 
 ### RJ-034 – Missing Provider Signature
 **Code:** PRV-008  
-**CARC:** 16 (Needs RARC; payer scope: all)  
+**CARC:** 16 + RARC MA81 (Verify; payer scope: all)  
 **Severity:** Low  
 **Sub-Category:** Missing Signature
 
@@ -366,7 +366,7 @@ Surgical center not contracted or enrolled with the payer network.
 
 ### RJ-036 – TIN Doesn't Match NPI
 **Code:** PRV-010  
-**CARC:** 16 (Needs RARC; payer scope: all)  
+**CARC:** 16 + RARC N209 (Confirmed; payer scope: all)  
 **Severity:** Medium  
 **Sub-Category:** Tax ID Mismatch
 
@@ -406,7 +406,7 @@ Submitted TIN doesn't match on-file TIN for the provider NPI.
 
 ### RJ-037 – Missing Supervising Provider
 **Code:** PRV-011  
-**CARC:** 16 (Needs RARC; payer scope: all)  
+**CARC:** 16 + RARC N297 (Verify; payer scope: all)  
 **Severity:** Medium  
 **Sub-Category:** Supervising Provider
 
@@ -446,7 +446,7 @@ Resident services billed without supervising physician info.
 
 ### RJ-038 – Service Location Address Mismatch
 **Code:** PRV-012  
-**CARC:** 16 (Needs RARC; payer scope: all)  
+**CARC:** 16 + RARC N294 (Confirmed; payer scope: all)  
 **Severity:** Low  
 **Sub-Category:** Address Mismatch
 

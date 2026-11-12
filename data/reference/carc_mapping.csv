@@ -1,51 +1,51 @@
-scenario_id,scenario,category,legacy_code,carc,payer_scope,status,meaning_our_words,note
-RJ-001,Policy lapsed on date of service,eligibility,ELG-001,200,all,confirmed,Service fell in a gap when coverage had lapsed,Changed from 27 after checking the full list
-RJ-002,Service before policy effective date,eligibility,ELG-002,26,all,confirmed,Service happened before coverage started,
-RJ-003,Member ID not found,eligibility,ELG-003,31,all,confirmed,Payer cannot match the patient to a member,
-RJ-004,Dependent exceeds age limit,eligibility,ELG-004,32,commercial,confirmed,Patient is not an eligible dependent on this plan,
-RJ-005,Annual benefit maximum reached,eligibility,ELG-005,119,all,confirmed,Benefit limit for the period has been used up,
-RJ-006,Service within waiting period,eligibility,ELG-006,179,commercial,confirmed,Plan waiting period not yet met,Commercial only; not a Medicaid scenario
-RJ-007,Service excluded under plan,eligibility,ELG-007,204,all,confirmed,Service is not a covered benefit on this plan,
-RJ-008,Coverage ended with employment,eligibility,ELG-008,27,commercial,confirmed,Service happened after coverage ended,Commercial only
-RJ-009,Multiple primary policies (COB),eligibility,ELG-009,22,all,confirmed,Another payer should pay first (coordination of benefits),
-RJ-010,Pre-existing condition exclusion,eligibility,ELG-010,51,commercial,dropped,Pre-existing condition not covered,Dropped: largely barred under the ACA
-RJ-011,Service outside coverage territory,eligibility,ELG-011,158,all,confirmed,Service was given outside the United States,
-RJ-012,Service not in plan tier,eligibility,ELG-012,204,all,confirmed,Service is not a covered benefit on this plan,
-RJ-013,Coverage retroactively cancelled,eligibility,ELG-013,27,all,confirmed,Service happened after coverage ended,
-RJ-014,ICD-10 code lacks specificity,coding,COD-001,146,all,confirmed,Diagnosis code not valid for the date of service,
-RJ-015,Procedure inconsistent with diagnosis,coding,COD-002,11,all,confirmed,Diagnosis does not support the procedure,
-RJ-016,Unbundling,coding,COD-003,236,all,confirmed,Procedure not allowed with another same-day procedure per NCCI,97 is the alternative
-RJ-017,E&M level not supported (upcoding),coding,COD-004,150,all,confirmed,Documentation does not support this level of service,
-RJ-018,Missing or invalid modifier,coding,COD-005,4,all,confirmed,Procedure code does not fit the modifier used,
-RJ-019,Procedure conflicts with patient sex,coding,COD-006,7,all,confirmed,Procedure does not fit the patient's recorded sex,
-RJ-020,Procedure conflicts with patient age,coding,COD-007,6,all,confirmed,Procedure does not fit the patient's age,
-RJ-021,Mutually exclusive procedures,coding,COD-008,231,all,confirmed,Two procedures cannot be billed together the same day,
-RJ-022,Diagnosis code missing,coding,COD-009,16,all,needs_rarc,Claim is missing information or has a billing error,Needs a remark code (RARC) to say what is missing
-RJ-023,Frequency limit exceeded,coding,COD-010,151,all,confirmed,Too many units or too frequent for what was documented,
-RJ-024,Invalid NDC,coding,COD-011,16,all,needs_rarc,Claim is missing information or has a billing error,Needs a remark code (RARC)
-RJ-025,Place of service mismatch,coding,COD-012,5,all,confirmed,Procedure does not fit the place of service,58 is the alternative
-RJ-026,Wrong revenue code for facility,coding,COD-013,282,all,confirmed,Code does not fit the type of bill,199 if revenue and procedure codes don't match
-RJ-027,Out of network without referral,provider,PRV-001,242,all,confirmed,Service not from a network or primary care provider,288 if the main issue is the missing referral
-RJ-028,Provider license expired,provider,PRV-002,B7,all,confirmed,Provider was not eligible to be paid on this date,
-RJ-029,Invalid or inactive NPI,provider,PRV-003,208,all,verify,NPI on the claim could not be matched,B7 is the alternative
-RJ-030,Provider not credentialed,provider,PRV-004,B7,all,confirmed,Provider was not eligible to be paid on this date,
-RJ-031,Service outside provider specialty,provider,PRV-005,8,all,confirmed,Procedure does not fit the provider's specialty/taxonomy,185 is the alternative
-RJ-032,Invalid taxonomy code,provider,PRV-006,16,all,needs_rarc,Claim is missing information or has a billing error,Needs a remark code (RARC)
-RJ-033,Provider on exclusion list,provider,PRV-007,B7,all,verify,Provider was not eligible to be paid on this date,Confirm with a remark code
-RJ-034,Missing provider signature,provider,PRV-008,16,all,needs_rarc,Claim is missing information or has a billing error,Needs a remark code (RARC)
-RJ-035,Facility not enrolled,provider,PRV-009,B7,all,confirmed,Provider was not eligible to be paid on this date,
-RJ-036,TIN/NPI mismatch,provider,PRV-010,16,all,needs_rarc,Claim is missing information or has a billing error,Needs a remark code (RARC)
-RJ-037,Supervising provider missing,provider,PRV-011,16,all,needs_rarc,Claim is missing information or has a billing error,Needs a remark code (RARC)
-RJ-038,Service address mismatch,provider,PRV-012,16,all,needs_rarc,Claim is missing information or has a billing error,Needs a remark code (RARC)
-RJ-039,Prior authorization missing,authorization,AUT-001,197,all,confirmed,Required authorization or notification was not obtained,
-RJ-040,Prior authorization expired,authorization,AUT-002,302,all,verify,Authorization time limit had passed,197 is the alternative
-RJ-041,Auth for a different procedure,authorization,AUT-003,284,all,confirmed,Auth exists but does not cover the billed service,
-RJ-042,Auth units exceeded,authorization,AUT-004,198,all,confirmed,Billed more than the authorization allowed,
-RJ-043,Auth for a different provider,authorization,AUT-005,296,all,confirmed,Auth exists but does not cover this provider,
-RJ-044,Auth for a different facility,authorization,AUT-006,15,all,confirmed,Auth number missing invalid or not for this service/provider,
-RJ-045,Referral missing,authorization,AUT-007,288,all,confirmed,Required referral is absent,
-RJ-046,Referral expired,authorization,AUT-008,287,all,verify,Referral limit exceeded,Check whether 287 fits an expired referral
-RJ-047,Not medically necessary,authorization,AUT-009,50,all,confirmed,Payer judged the service not medically necessary,
-RJ-048,Admission notice late,authorization,AUT-010,210,all,confirmed,Authorization or notice was not received in time,
-RJ-049,Step therapy not followed,authorization,AUT-011,B8,all,confirmed,A cheaper alternative should have been tried first,
-RJ-050,Experimental treatment,authorization,AUT-012,55,all,confirmed,Payer considers the service experimental,
+scenario_id,scenario,category,legacy_code,carc,rarc,payer_scope,status,meaning_our_words,note,source
+RJ-001,Policy lapsed on date of service,eligibility,ELG-001,200,,all,confirmed,Service fell in a gap when coverage had lapsed,Changed from 27 after checking the full list,https://x12.org/codes/claim-adjustment-reason-codes
+RJ-002,Service before policy effective date,eligibility,ELG-002,26,,all,confirmed,Service happened before coverage started,,https://x12.org/codes/claim-adjustment-reason-codes
+RJ-003,Member ID not found,eligibility,ELG-003,31,,all,confirmed,Payer cannot match the patient to a member,,https://x12.org/codes/claim-adjustment-reason-codes
+RJ-004,Dependent exceeds age limit,eligibility,ELG-004,32,,commercial,confirmed,Patient is not an eligible dependent on this plan,,https://x12.org/codes/claim-adjustment-reason-codes
+RJ-005,Annual benefit maximum reached,eligibility,ELG-005,119,,all,confirmed,Benefit limit for the period has been used up,,https://x12.org/codes/claim-adjustment-reason-codes
+RJ-006,Service within waiting period,eligibility,ELG-006,179,,commercial,confirmed,Plan waiting period not yet met,Commercial only; not a Medicaid scenario,https://x12.org/codes/claim-adjustment-reason-codes
+RJ-007,Service excluded under plan,eligibility,ELG-007,204,,all,confirmed,Service is not a covered benefit on this plan,,https://x12.org/codes/claim-adjustment-reason-codes
+RJ-008,Coverage ended with employment,eligibility,ELG-008,27,,commercial,confirmed,Service happened after coverage ended,Commercial only,https://x12.org/codes/claim-adjustment-reason-codes
+RJ-009,Multiple primary policies (COB),eligibility,ELG-009,22,,all,confirmed,Another payer should pay first (coordination of benefits),,https://x12.org/codes/claim-adjustment-reason-codes
+RJ-010,Pre-existing condition exclusion,eligibility,ELG-010,51,,commercial,dropped,Pre-existing condition not covered,Dropped: largely barred under the ACA,
+RJ-011,Service outside coverage territory,eligibility,ELG-011,158,,all,confirmed,Service was given outside the United States,,https://x12.org/codes/claim-adjustment-reason-codes
+RJ-012,Service not in plan tier,eligibility,ELG-012,204,,all,confirmed,Service is not a covered benefit on this plan,,https://x12.org/codes/claim-adjustment-reason-codes
+RJ-013,Coverage retroactively cancelled,eligibility,ELG-013,27,,all,confirmed,Service happened after coverage ended,,https://x12.org/codes/claim-adjustment-reason-codes
+RJ-014,ICD-10 code lacks specificity,coding,COD-001,146,,all,confirmed,Diagnosis code not valid for the date of service,,https://x12.org/codes/claim-adjustment-reason-codes
+RJ-015,Procedure inconsistent with diagnosis,coding,COD-002,11,,all,confirmed,Diagnosis does not support the procedure,,https://x12.org/codes/claim-adjustment-reason-codes
+RJ-016,Unbundling,coding,COD-003,236,,all,confirmed,Procedure not allowed with another same-day procedure per NCCI,97 is the alternative,https://x12.org/codes/claim-adjustment-reason-codes
+RJ-017,E&M level not supported (upcoding),coding,COD-004,150,,all,confirmed,Documentation does not support this level of service,,https://x12.org/codes/claim-adjustment-reason-codes
+RJ-018,Missing or invalid modifier,coding,COD-005,4,,all,confirmed,Procedure code does not fit the modifier used,,https://x12.org/codes/claim-adjustment-reason-codes
+RJ-019,Procedure conflicts with patient sex,coding,COD-006,7,,all,confirmed,Procedure does not fit the patient's recorded sex,,https://x12.org/codes/claim-adjustment-reason-codes
+RJ-020,Procedure conflicts with patient age,coding,COD-007,6,,all,confirmed,Procedure does not fit the patient's age,,https://x12.org/codes/claim-adjustment-reason-codes
+RJ-021,Mutually exclusive procedures,coding,COD-008,231,,all,confirmed,Two procedures cannot be billed together the same day,,https://x12.org/codes/claim-adjustment-reason-codes
+RJ-022,Diagnosis code missing,coding,COD-009,16,M76,all,confirmed,Claim is missing information or has a billing error,Remark code says the diagnosis is missing or invalid,https://med.noridianmedicare.com/web/jddme/topics/ra/denial-resolution/m76-16
+RJ-023,Frequency limit exceeded,coding,COD-010,151,,all,confirmed,Too many units or too frequent for what was documented,,https://x12.org/codes/claim-adjustment-reason-codes
+RJ-024,Invalid NDC,coding,COD-011,16,M119,all,confirmed,Claim is missing information or has a billing error,"Remark code says the NDC is missing, invalid, deactivated or withdrawn",https://med.noridianmedicare.com/web/jadme/topics/ra/denial-resolution/m119-16
+RJ-025,Place of service mismatch,coding,COD-012,5,,all,confirmed,Procedure does not fit the place of service,58 is the alternative,https://x12.org/codes/claim-adjustment-reason-codes
+RJ-026,Wrong revenue code for facility,coding,COD-013,282,,all,confirmed,Code does not fit the type of bill,199 if revenue and procedure codes don't match,https://x12.org/codes/claim-adjustment-reason-codes
+RJ-027,Out of network without referral,provider,PRV-001,242,,all,confirmed,Service not from a network or primary care provider,288 if the main issue is the missing referral,https://x12.org/codes/claim-adjustment-reason-codes
+RJ-028,Provider license expired,provider,PRV-002,B7,,all,confirmed,Provider was not eligible to be paid on this date,,https://x12.org/codes/claim-adjustment-reason-codes
+RJ-029,Invalid or inactive NPI,provider,PRV-003,208,N290,all,confirmed,NPI on the claim could not be matched,"CARC 208 = NPI not matched; N290 for the rendering NPI, N257 if it's the billing NPI",https://med.noridianmedicare.com/web/jfb/topics/claim-submission/reason-code-guidance/missing-incorrect-req-npi-info
+RJ-030,Provider not credentialed,provider,PRV-004,B7,,all,confirmed,Provider was not eligible to be paid on this date,,https://x12.org/codes/claim-adjustment-reason-codes
+RJ-031,Service outside provider specialty,provider,PRV-005,8,,all,confirmed,Procedure does not fit the provider's specialty/taxonomy,185 is the alternative,https://x12.org/codes/claim-adjustment-reason-codes
+RJ-032,Invalid taxonomy code,provider,PRV-006,16,N288,all,confirmed,Claim is missing information or has a billing error,N288 = rendering provider taxonomy; use N255 if it's the billing provider's taxonomy,https://medicaid.ncdhhs.gov/blog/2021/08/27/claims-denied-taxonomy-codes-missing-incorrect-or-inactive
+RJ-033,Provider on exclusion list,provider,PRV-007,B7,,all,confirmed,Provider was not eligible to be paid on this date,B7 confirmed on X12 list; no single remark code for OIG exclusion confirmed,https://x12.org/codes/claim-adjustment-reason-codes
+RJ-034,Missing provider signature,provider,PRV-008,16,MA81,all,verify,Claim is missing information or has a billing error,MA81 (provider/supplier signature) found only on secondary sites; confirm against X12,https://www.mdclarity.com/denial-code-rarc/ma81
+RJ-035,Facility not enrolled,provider,PRV-009,B7,,all,confirmed,Provider was not eligible to be paid on this date,,https://x12.org/codes/claim-adjustment-reason-codes
+RJ-036,TIN/NPI mismatch,provider,PRV-010,16,N209,all,confirmed,Claim is missing information or has a billing error,N209 = missing/incomplete/invalid taxpayer ID (TIN),https://www.dmas.virginia.gov/media/2140/npi-related-error-codes-resolutions-for-cms-1500-08-05.pdf
+RJ-037,Supervising provider missing,provider,PRV-011,16,N297,all,verify,Claim is missing information or has a billing error,N297 = supervising provider primary identifier (N296 for the name); found only on secondary sites,https://www.codingahead.com/remark-code-m506/
+RJ-038,Service address mismatch,provider,PRV-012,16,N294,all,confirmed,Claim is missing information or has a billing error,N294 = service facility address; MA114 is the alternative (where services were furnished),https://medicare.fcso.com/claims/tips-prevent-ruc-co-16
+RJ-039,Prior authorization missing,authorization,AUT-001,197,,all,confirmed,Required authorization or notification was not obtained,,https://x12.org/codes/claim-adjustment-reason-codes
+RJ-040,Prior authorization expired,authorization,AUT-002,302,,all,confirmed,Authorization time limit had passed,302 confirmed on X12 list: authorization time limit expired,https://x12.org/codes/claim-adjustment-reason-codes
+RJ-041,Auth for a different procedure,authorization,AUT-003,284,,all,confirmed,Auth exists but does not cover the billed service,,https://x12.org/codes/claim-adjustment-reason-codes
+RJ-042,Auth units exceeded,authorization,AUT-004,198,,all,confirmed,Billed more than the authorization allowed,,https://x12.org/codes/claim-adjustment-reason-codes
+RJ-043,Auth for a different provider,authorization,AUT-005,296,,all,confirmed,Auth exists but does not cover this provider,,https://x12.org/codes/claim-adjustment-reason-codes
+RJ-044,Auth for a different facility,authorization,AUT-006,296,,all,verify,Auth exists but does not cover this provider or facility,"Was 15, but X12 deactivated 15 on 05/01/2018. 296 (auth doesn't apply to the provider) is the best fit since a facility is a provider",https://x12.org/codes/claim-adjustment-reason-codes
+RJ-045,Referral missing,authorization,AUT-007,288,,all,confirmed,Required referral is absent,,https://x12.org/codes/claim-adjustment-reason-codes
+RJ-046,Referral expired,authorization,AUT-008,287,,all,confirmed,Referral limit exceeded,"287 (referral exceeded) confirmed; no CARC specifically for an expired referral, so this is the closest",https://x12.org/codes/claim-adjustment-reason-codes
+RJ-047,Not medically necessary,authorization,AUT-009,50,,all,confirmed,Payer judged the service not medically necessary,,https://x12.org/codes/claim-adjustment-reason-codes
+RJ-048,Admission notice late,authorization,AUT-010,210,,all,confirmed,Authorization or notice was not received in time,,https://x12.org/codes/claim-adjustment-reason-codes
+RJ-049,Step therapy not followed,authorization,AUT-011,B8,,all,confirmed,A cheaper alternative should have been tried first,,https://x12.org/codes/claim-adjustment-reason-codes
+RJ-050,Experimental treatment,authorization,AUT-012,55,,all,confirmed,Payer considers the service experimental,,https://x12.org/codes/claim-adjustment-reason-codes

@@ -94,7 +94,7 @@ The project runs in **5 phases over about 12–13 weeks** (about 7 hours a week)
 - [x] **Step 1.1:** Write 50 denial scenarios across four areas: eligibility, coding, provider, and prior authorization ([`kb/`](kb/))
 - [x] **Step 1.2:** Map every scenario to a real denial code (CARC) ([`kb/rejection_mapping.md`](kb/rejection_mapping.md), [`data/reference/carc_mapping.csv`](data/reference/carc_mapping.csv))
 - [x] **Step 1.3:** Tag each scenario as "all insurers" or "commercial only"
-- [ ] **Step 1.4:** Add remark codes (RARCs) for the 7 scenarios that use the general code 16, and confirm the 4 marked "verify"
+- [x] **Step 1.4:** Add remark codes (RARCs) for the 7 scenarios that use the general code 16, and confirm the 4 marked "verify" (3 scenarios still marked "verify", see below)
 - [ ] **Step 1.5:** Add Medicaid-specific scenarios: spend-down, retroactive eligibility, timely filing, other insurance that pays first, provider enrollment
 - [ ] **Step 1.6:** Build a generator that creates about 200 fake denials with patients, coverage dates, authorizations, and providers
 - [ ] **Step 1.7:** Write a one-page product requirements document (PRD): who it's for, the problem, what v1 does, how success is measured, what could go wrong
@@ -154,16 +154,17 @@ More detail on each phase: [`docs/ROADMAP.md`](docs/ROADMAP.md)
 
 ## 6. Where the project is today
 
-**Phase 1, steps 1.1–1.3 done.** All 50 scenarios now carry real denial codes:
+**Phase 1, steps 1.1–1.4 done.** All 50 scenarios now carry real denial codes, and the general code-16 ones also carry a remark code (RARC) saying exactly what's wrong:
 
 | Status | Scenarios |
 |---|---|
-| Confirmed against the official code list | 38 |
-| Best fit, still to confirm | 4 |
-| Need a remark code (general code 16) | 7 |
+| Confirmed against the X12 list or a published payer/CMS source | 46 |
+| Best fit, still to confirm | 3 |
 | Dropped (pre-existing condition, largely barred under the ACA) | 1 |
 
-**Next:** step 1.4 (remark codes), then the Medicaid scenarios and the data generator.
+**Found while checking:** code 15 (authorization doesn't match) was **deactivated by X12 in 2018**, so RJ-044 was moved to code 296. Checking codes against the live list, not memory, is exactly what the copilot will have to do too.
+
+**Next:** step 1.5, Medicaid-specific scenarios.
 
 ## 7. How the repository is organized
 

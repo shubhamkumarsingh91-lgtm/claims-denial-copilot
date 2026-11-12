@@ -39,3 +39,4 @@ So v2 is a **copilot**: it does the root-cause digging and drafts the fix, with 
 |---|---|
 | 2026-11-11 | New repo. All 50 scenarios mapped to real CARCs (38 confirmed, 4 to verify, 7 need a RARC, 1 dropped). Payer scope tagged per scenario. |
 | 2026-11-11 | Brought over the v1 prompts, outputs, scripts and screenshots into `v1-archive/`. README rewritten as a step-by-step project plan. |
+| 2026-11-11 | Step 1.4: remark codes added for the 7 code-16 scenarios; 4 "verify" rows checked. Found CARC 15 deactivated (2018), RJ-044 moved to 296. Now 46 confirmed, 3 verify, 1 dropped. Each row links its source. |

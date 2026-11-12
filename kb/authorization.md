@@ -46,7 +46,7 @@ Elective MRI performed with no prior authorization on file.
 
 ### RJ-040 – Prior Authorization Expired
 **Code:** AUT-002  
-**CARC:** 302 (Verify; payer scope: all)  
+**CARC:** 302 (Confirmed; payer scope: all)  
 **Severity:** High  
 **Sub-Category:** Expired PA
 
@@ -206,7 +206,7 @@ PA granted to Provider A; service rendered by Provider B.
 
 ### RJ-044 – PA Issued for Different Facility
 **Code:** AUT-006  
-**CARC:** 15 (Confirmed; payer scope: all)  
+**CARC:** 296 (Verify; payer scope: all)  
 **Severity:** Medium  
 **Sub-Category:** Wrong Facility
 
@@ -286,7 +286,7 @@ Specialist visit under HMO with no PCP referral submitted.
 
 ### RJ-046 – Referral Expired
 **Code:** AUT-008  
-**CARC:** 287 (Verify; payer scope: all)  
+**CARC:** 287 (Confirmed; payer scope: all)  
 **Severity:** Medium  
 **Sub-Category:** Referral Expired
 
