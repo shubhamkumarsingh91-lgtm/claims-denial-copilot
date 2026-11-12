@@ -2,7 +2,15 @@
 
 **An AI assistant that helps medical billing teams fix denied insurance claims: it finds out why a claim was denied, checks the facts, and drafts the fix. A human approves every step.**
 
-> **Disclaimer:** This is an independent personal project. It is not affiliated with, endorsed by, or built for any employer, state agency, Medicaid program, or vendor. It uses only public reference information and fully synthetic (made-up) examples. It contains no PHI, no SSNs, no real member or provider records, and no internal or confidential material from any organization. Outputs are for demonstration and learning only and must not be used for real billing, coverage, or medical decisions.
+<a id="disclaimer"></a>
+
+> **Disclaimer: independent project, public and synthetic data only**
+>
+> - **Independent:** I built this project on my own, outside of any job. No employer, state agency, Medicaid program, health plan, or vendor is connected to it, has endorsed it, or has contributed to it.
+> - **No PHI or PII, ever:** no real patient's health information and no information that could identify a real person (names, SSNs, member IDs, dates of birth, addresses, phone numbers, or anything similar) is used anywhere in this project.
+> - **No Medicaid or agency data:** no claims, member, provider, eligibility, or payment records from any Medicaid program, state agency, or payer are used, and no internal documents, system screenshots, tickets, reports, or business rules from any organization.
+> - **Only two kinds of data:** (1) **public** reference information that anyone can look up, such as standard denial-code numbers and public CMS and NPI registry data, and (2) **synthetic** examples I invented. Any names, IDs, dates, or plans in examples are made up.
+> - **Not for real decisions:** the outputs are for learning and demonstration only and must never be used for real billing, coverage, or medical decisions.
 
 ---
 

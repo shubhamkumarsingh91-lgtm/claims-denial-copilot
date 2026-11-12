@@ -1,6 +1,6 @@
 # Rejection Code Mapping
 
-> Independent personal project. Not affiliated with any employer, state agency, Medicaid program, or vendor. Public reference codes and synthetic examples only; no PHI or internal data.
+> **Disclaimer:** independent personal project. No PHI, no PII, and no Medicaid, agency, or other non-public data is used. Only public reference information and synthetic (invented) examples. See the full disclaimer in the [README](../README.md#disclaimer).
 
 Each scenario's legacy code (ELG/COD/PRV/AUT, invented for this project) is mapped to the real **Claim Adjustment Reason Code (CARC)** a payer would send on an 835 remittance. The "Meaning" column is our own plain-language summary, not the official wording. Official CARC descriptions are maintained and copyrighted by X12; see the [X12 CARC list](https://x12.org/codes/claim-adjustment-reason-codes).
 
