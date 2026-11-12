@@ -1,0 +1,11 @@
+Claim rejected: Member not eligible on date of service
+Claim rejected: Subscriber ID missing or invalid
+Claim rejected: Duplicate claim for same member and date
+Claim rejected: Billing provider NPI not found
+Claim rejected: Rendering provider missing
+Claim rejected: Diagnosis code missing
+Claim rejected: Procedure code invalid
+Claim rejected: Prior authorization required but missing
+Claim rejected: Service line missing charge amount
+Claim rejected: Place of service invalid
+
