@@ -1,77 +1,199 @@
 # Claims Denial Copilot
 
-An AI copilot for provider billing teams. For each denied claim, it finds the likely root cause, checks the facts with tools, and drafts the fix. A human approves every suggestion.
+**An AI assistant that helps medical billing teams fix denied insurance claims: it finds out why a claim was denied, checks the facts, and drafts the fix. A human approves every step.**
 
-> **Disclaimer:** This is an independent personal project. It is not affiliated with, endorsed by, or built for any employer, state agency, Medicaid program, or vendor. It uses only public reference information and fully synthetic examples. It contains no PHI, no SSNs, no real member or provider records, and no internal or confidential material from any organization. Outputs are for demonstration and learning only and must not be used for real billing, coverage, or medical decisions.
+> **Disclaimer:** This is an independent personal project. It is not affiliated with, endorsed by, or built for any employer, state agency, Medicaid program, or vendor. It uses only public reference information and fully synthetic (made-up) examples. It contains no PHI, no SSNs, no real member or provider records, and no internal or confidential material from any organization. Outputs are for demonstration and learning only and must not be used for real billing, coverage, or medical decisions.
 
 ---
 
-## The problem
+## Contents
 
-When a provider bills an insurer, a large share of claims come back denied. A billing specialist then has to work out *why* (eligibility? authorization? coding? provider enrollment?), fix the claim, and resubmit or appeal it. With hundreds of denials in a queue, that's slow, repetitive work, and unworked denials are lost revenue.
+1. [The problem, in plain words](#1-the-problem-in-plain-words)
+2. [What the copilot does](#2-what-the-copilot-does)
+3. [A worked example](#3-a-worked-example)
+4. [What's in and out of scope](#4-whats-in-and-out-of-scope)
+5. [The project plan, step by step](#5-the-project-plan-step-by-step)
+6. [Where the project is today](#6-where-the-project-is-today)
+7. [How the repository is organized](#7-how-the-repository-is-organized)
+8. [Glossary](#8-glossary)
+9. [How this project started](#9-how-this-project-started)
 
-Billers already know what denial codes mean. What they don't have is **time**. So this project doesn't explain claims. It does the digging and drafts the fix.
+---
 
-## What the copilot does (target v1)
+## 1. The problem, in plain words
 
-For each denial in the work queue:
+When a doctor's office or hospital treats a patient, it sends a bill (a **claim**) to the patient's insurance. Many claims come back **denied**, with a short reason code instead of a payment.
 
-1. **Reads** the denial: the CARC/RARC reason codes and claim fields (from a synthetic 835 remittance or CSV row)
-2. **Checks the facts** with tools: eligibility *on the date of service*, NPI status, prior-auth match, NCCI code-pair edits
-3. **Returns structured output**: root-cause category, evidence (which tool said what), fix steps, corrected-claim checklist, appeal draft, confidence
-4. **Escalates** with "needs human review" when the tools disagree or the evidence is thin, instead of guessing
-5. **Waits for a human**: the biller approves, edits, or rejects each suggestion
+Someone on the billing team then has to:
 
-## Scope
+1. Figure out **why** it was denied: was the patient covered that day? Was approval needed in advance? Was a billing code wrong?
+2. Look up the facts in several different systems.
+3. **Fix** the claim and resend it, or write an appeal.
+
+Billers already know what the codes mean. What they lack is **time**: with hundreds of denials in a queue, the digging is slow and repetitive, and every denial left unworked is money the provider never collects.
+
+## 2. What the copilot does
+
+The copilot does the digging so the biller doesn't have to start from zero. For each denied claim:
+
+| Step | The copilot… | Example |
+|---|---|---|
+| 1. Read | Reads the denial code and the claim details | "Code 27: coverage ended" |
+| 2. Check | Uses **tools** to check facts instead of guessing | Looks up whether the patient was covered *on the date of the visit* |
+| 3. Explain | Names the most likely root cause and shows its evidence | "Old plan ended Feb 28; a new plan started Mar 1" |
+| 4. Suggest | Drafts the fix: what to correct, what to resend, or an appeal letter | "Bill the new plan instead" |
+| 5. Escalate | Says **"needs human review"** when facts conflict or evidence is thin | Two tools disagree, so it flags the case instead of guessing |
+| 6. Wait | The biller **approves, edits, or rejects** the suggestion | Nothing is sent without a human |
+
+It's a *copilot*, not an autopilot: it prepares the work, and the person stays in charge.
+
+## 3. A worked example
+
+*(Synthetic example: invented patient, invented plans.)*
+
+**The denial:** a clinic billed an office visit on **March 10**. The insurer denied it with reason code **27**, which means the service happened after the patient's coverage ended.
+
+**What a biller would normally do:** open the eligibility system, search for the patient, read the coverage dates, then work out what to do next. Repeated for every claim in the queue.
+
+**What the copilot does:**
+
+1. Reads code 27 and knows to check coverage dates.
+2. Calls `check_eligibility(member, 2026-03-10)` and finds that Plan A ended **Feb 28** and Plan B started **Mar 1**.
+3. Concludes: *"The denial is correct for Plan A. The patient was covered by Plan B on the date of service."*
+4. Suggests: *"Resubmit the claim to Plan B with the new member ID. No appeal needed."*
+5. The biller checks it, clicks **Approve**, and moves to the next denial.
+
+Note the trap in step 2: a patient who is "active" **today** may not have been covered **on the day of the visit**. The copilot checks the date of service, not the current status.
+
+## 4. What's in and out of scope
 
 | In scope | Out of scope |
 |---|---|
-| Denied claims and provider billing staff | Patients as users |
-| Any payer: a **payer-agnostic core** (CARC/RARC, 835, NCCI, NPI work the same for Medicare, Medicaid, commercial) | Real patient, member, or provider data |
-| **Medicaid rules as the specialty layer** | Anything from any employer, agency, or vendor |
-| Synthetic data and public reference information | Fine-tuning models, multi-agent frameworks |
-| Measuring accuracy with an eval harness | Production deployment for real billing |
+| Denied claims, worked by provider billing staff | Patients as users |
+| **Any insurer**: the denial codes work the same for Medicare, Medicaid, and commercial plans | Real patient, member, or provider data |
+| **Medicaid rules as a specialty layer** on top | Anything from any employer, agency, or vendor |
+| Made-up (synthetic) data and public reference information | Fine-tuning AI models |
+| Measuring how accurate the AI is | Real billing in production |
 
-## Current status
+## 5. The project plan, step by step
 
-**Phase 1: Foundation (in progress)**
+The project runs in **5 phases over about 12–13 weeks** (about 7 hours a week). Each phase ends with something that works and can be shown.
 
-- [x] 50 denial scenarios across eligibility, coding, provider, and authorization ([`kb/`](kb/))
-- [x] Every scenario mapped to a real **Claim Adjustment Reason Code (CARC)** ([`data/reference/carc_mapping.csv`](data/reference/carc_mapping.csv), [`kb/rejection_mapping.md`](kb/rejection_mapping.md)): 38 confirmed, 4 to verify, 7 need a remark code (RARC), 1 dropped
-- [ ] Add RARCs for the 7 generic CARC-16 scenarios
-- [ ] Add Medicaid-specific scenarios (e.g., spend-down, retro eligibility, timely filing)
-- [ ] Synthetic denial data generator
-- [ ] One-page PRD
+### Phase 1: Foundation (get the facts right)
 
-## Roadmap
+*Goal: the copilot learns from real denial codes and realistic examples, not made-up ones.*
 
-| Phase | What gets built | Done when |
-|---|---|---|
-| 1. Foundation | Real codes, Medicaid layer, synthetic data, PRD | No invented codes; 200 synthetic denials |
-| 2. Tools + engine | 5 tools + LLM with tool use and structured JSON output | One command runs a denial end to end with tool evidence |
-| 3. Evaluation | 100-case answer key + automated scoring | A score per version, plus a list of failures with reasons |
-| 4. Copilot UI | Streamlit work queue with Approve / Edit / Reject | A new user can work 10 denials without help |
-| 5. Analytics + ship | SQL denial-trend dashboard, public demo, video | A public link works; README shows the eval scores |
+- [x] **Step 1.1:** Write 50 denial scenarios across four areas: eligibility, coding, provider, and prior authorization ([`kb/`](kb/))
+- [x] **Step 1.2:** Map every scenario to a real denial code (CARC) ([`kb/rejection_mapping.md`](kb/rejection_mapping.md), [`data/reference/carc_mapping.csv`](data/reference/carc_mapping.csv))
+- [x] **Step 1.3:** Tag each scenario as "all insurers" or "commercial only"
+- [ ] **Step 1.4:** Add remark codes (RARCs) for the 7 scenarios that use the general code 16, and confirm the 4 marked "verify"
+- [ ] **Step 1.5:** Add Medicaid-specific scenarios: spend-down, retroactive eligibility, timely filing, other insurance that pays first, provider enrollment
+- [ ] **Step 1.6:** Build a generator that creates about 200 fake denials with patients, coverage dates, authorizations, and providers
+- [ ] **Step 1.7:** Write a one-page product requirements document (PRD): who it's for, the problem, what v1 does, how success is measured, what could go wrong
 
-See [`docs/ROADMAP.md`](docs/ROADMAP.md) for details.
+**Done when:** no invented codes remain, and 200 synthetic denials exist.
 
-## Repository layout
+### Phase 2: Tools and engine (make it think and check)
+
+*Goal: the copilot can take one denial and produce a checked, structured answer.*
+
+- [ ] **Step 2.1:** Build five tools the AI can call:
+  - `check_eligibility`: was the patient covered **on the date of service**?
+  - `lookup_carc`: what kind of denial is this code?
+  - `check_auth`: does the prior approval match the service, provider, and date?
+  - `check_ncci`: are these two procedure codes allowed together? (public Medicare edit tables)
+  - `lookup_npi`: is the provider's ID active? (public national registry)
+- [ ] **Step 2.2:** Connect an AI model (Claude, with a local model as an option) that decides which tools to call
+- [ ] **Step 2.3:** Make it answer in a fixed format: root cause, evidence, fix steps, appeal draft, escalate yes/no
+- [ ] **Step 2.4:** Run one denial end to end with a single command
+
+**Done when:** one command takes a denial and returns a structured answer with evidence from at least one tool.
+
+### Phase 3: Evaluation (prove it works)
+
+*Goal: measure accuracy with numbers, not impressions.*
+
+- [ ] **Step 3.1:** Write an answer key of 100 test cases, each with the correct root cause and fix: 60 simple, 20 with several causes, 10 where a tool contradicts the denial, 10 that should be escalated
+- [ ] **Step 3.2:** Build a script that runs all 100 and scores them automatically
+- [ ] **Step 3.3:** Track the scores: right root cause, complete fix, invented codes (target: zero), right tools used, correct escalations, cost and time per denial
+- [ ] **Step 3.4:** Save every run so improvement is visible from version to version
+
+**Done when:** there's a score to quote (e.g., "right root cause on 81 of 100") and a list of failures with reasons.
+
+### Phase 4: Copilot screen (make it usable)
+
+*Goal: a billing person can actually work a queue with it.*
+
+- [ ] **Step 4.1:** Build a simple web screen (Streamlit) listing the denials in a queue
+- [ ] **Step 4.2:** Show each AI suggestion with its evidence
+- [ ] **Step 4.3:** Add **Approve / Edit / Reject** buttons and a draft appeal letter
+- [ ] **Step 4.4:** Save every decision, so the system learns where it's wrong
+
+**Done when:** someone new can work 10 denials without help.
+
+### Phase 5: Analytics and launch (show the bigger picture)
+
+*Goal: show patterns across denials and put the project in front of people.*
+
+- [ ] **Step 5.1:** Write SQL reports: most common denial codes, how many were preventable, trends over time
+- [ ] **Step 5.2:** Publish a live demo link
+- [ ] **Step 5.3:** Record a 3-minute demo video
+- [ ] **Step 5.4:** Write up the results and what was learned
+
+**Done when:** the demo link works, and this README shows the evaluation scores.
+
+More detail on each phase: [`docs/ROADMAP.md`](docs/ROADMAP.md)
+
+## 6. Where the project is today
+
+**Phase 1, steps 1.1–1.3 done.** All 50 scenarios now carry real denial codes:
+
+| Status | Scenarios |
+|---|---|
+| Confirmed against the official code list | 38 |
+| Best fit, still to confirm | 4 |
+| Need a remark code (general code 16) | 7 |
+| Dropped (pre-existing condition, largely barred under the ACA) | 1 |
+
+**Next:** step 1.4 (remark codes), then the Medicaid scenarios and the data generator.
+
+## 7. How the repository is organized
 
 ```
 claims-denial-copilot/
-  README.md
-  kb/                    denial scenarios (provider, analyst views) + code mappings
-  data/reference/        carc_mapping.csv
-  evals/seed_scenarios/  multi-issue and edge-case prompts carried over from v1
-  docs/                  ROADMAP.md, build-log.md
+├── README.md              ← you are here: the project plan
+├── kb/                    ← the 50 denial scenarios and how each maps to a real code
+├── data/reference/        ← carc_mapping.csv: the mapping as data the code will read
+├── evals/seed_scenarios/  ← tricky test cases carried over from v1, the start of the answer key
+├── docs/
+│   ├── ROADMAP.md         ← phase details, tools, how scoring works
+│   └── build-log.md       ← what v1 taught and why the project changed direction
+└── v1-archive/            ← the original translator: prompts, outputs, scripts, screenshots
 ```
 
-Planned as the phases land: `copilot/` (tools, engine, prompts), `evals/` harness, `app/` (Streamlit), `analytics/` (SQL), `scripts/` (synthetic data).
+Folders added as the phases land: `copilot/` (tools and AI engine), `evals/` scoring, `app/` (the screen), `analytics/` (SQL), `scripts/` (data generator).
 
-## About the codes
+## 8. Glossary
 
-CARC and RARC codes are maintained by [X12](https://x12.org/codes/claim-adjustment-reason-codes). The official descriptions are copyrighted, so this repo uses the code numbers with **plain-language summaries in our own words** and links to X12 as the source. CPT descriptions (owned by the AMA) are not reproduced.
+| Term | Meaning |
+|---|---|
+| **Claim** | A bill a provider sends to an insurer for a service |
+| **Denial** | The insurer refuses to pay all or part of a claim |
+| **CARC** | Claim Adjustment Reason Code: the standard code explaining *why* a claim wasn't paid in full (e.g., 197 = prior authorization missing) |
+| **RARC** | Remittance Advice Remark Code: an extra code that gives more detail, needed when the CARC is general (like 16) |
+| **835** | The standard electronic file insurers send back to providers with payments and denial codes |
+| **DOS** | Date of service: the day the patient was treated |
+| **Prior authorization** | Approval from the insurer that's required *before* some services |
+| **NPI** | National Provider Identifier: a unique ID for every provider in the US |
+| **NCCI** | National Correct Coding Initiative: public Medicare rules about which procedure codes can't be billed together |
+| **Payer** | The insurer: Medicare, Medicaid, or a commercial plan |
+| **Medicaid spend-down** | A Medicaid rule where some people must spend a set amount on medical costs before coverage applies |
+| **Eval / answer key** | A set of test cases with known correct answers, used to score the AI |
 
-## Background
+## 9. How this project started
 
-This project grew out of [healthcare-translator-ai](https://github.com/shubhamkumarsingh91-lgtm/healthcare-translator-ai), a persona-based claims translator built with Ollama, Open WebUI, and a local RAG knowledge base. The build log in [`docs/build-log.md`](docs/build-log.md) covers what that version taught me and why the project changed direction.
+It began as the [Healthcare Claims Translator](https://github.com/shubhamkumarsingh91-lgtm/healthcare-translator-ai) (v1, April 2026). That version explained claim rejections to patients, providers, and analysts using local AI models. Building it taught the core lessons (grounding, retrieval, testing), and reviewing it honestly showed that billers need the work done, not explained. The full story: [`docs/build-log.md`](docs/build-log.md). The original files: [`v1-archive/`](v1-archive/).
+
+### About the codes
+
+CARC and RARC codes are maintained by [X12](https://x12.org/codes/claim-adjustment-reason-codes). The official descriptions are copyrighted, so this project uses the code numbers with **plain-language summaries in its own words** and links to X12 as the source. CPT procedure descriptions (owned by the AMA) are not reproduced.
