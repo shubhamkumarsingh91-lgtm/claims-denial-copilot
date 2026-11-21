@@ -105,10 +105,10 @@ The project runs in **5 phases over about 12–13 weeks** (about 7 hours a week)
 
 *Goal: the copilot can take one denial and produce a checked, structured answer.*
 
-- [ ] **Step 2.1:** Build five tools the AI can call:
-  - `check_eligibility`: was the patient covered **on the date of service**?
+- [ ] **Step 2.1:** Build five tools the AI can call (2 of 5 built as rule-based checks, see below):
+  - [x] `check_eligibility`: was the patient covered **on the date of service**? Built as the [date-of-service check](docs/features/dos-check.md), which also checks coverage on that date and timely filing
   - `lookup_carc`: what kind of denial is this code?
-  - `check_auth`: does the prior approval match the service, provider, and date?
+  - [x] `check_auth`: does the prior approval match the service, units, provider, and date? Built as the [prior auth matcher](docs/features/pa-matcher.md)
   - `check_ncci`: are these two procedure codes allowed together? (public Medicare edit tables)
   - `lookup_npi`: is the provider's ID active? (public national registry)
 - [ ] **Step 2.2:** Connect an AI model (Claude, with a local model as an option) that decides which tools to call
@@ -164,7 +164,21 @@ More detail on each phase: [`docs/ROADMAP.md`](docs/ROADMAP.md)
 
 **Found while checking:** code 15 (authorization doesn't match) was **deactivated by X12 in 2018**, so RJ-044 was moved to code 296. Checking codes against the live list, not memory, is exactly what the copilot will have to do too.
 
-**Next:** step 1.5, Medicaid-specific scenarios.
+**Phase 2 started early: the first two checks work.** The [date-of-service check](docs/features/dos-check.md) and the [prior auth matcher](docs/features/pa-matcher.md) are plain Python rules (no AI yet). Each one says exactly which rule failed, which denial code that points to, the evidence side by side, and the next action for the biller. They were pulled forward because every other check depends on the date of service, and because they're easy to test.
+
+| Check | Synthetic test cases | Result |
+|---|---|---|
+| Date of service (eligibility, coverage, timely filing) | 11 | all pass |
+| Prior authorization (missing, code, dates, units, provider) | 9 | all pass |
+
+Every test compares the **whole** output (every finding, code, explanation, piece of evidence, next action and note) with a hand-written answer, and also fails if a check ever emits a denial code that isn't in the reference mapping. Run them yourself:
+
+```bash
+pip install -r requirements-dev.txt
+python -m pytest tests/ -v
+```
+
+**Next:** step 1.5, Medicaid-specific scenarios (which also adds timely filing, code 29, to the mapping), then the remaining checks: eligibility segments and retro eligibility in more depth, crossover and other insurance, frequency and duplicates, provider type and place of service.
 
 ## 7. How the repository is organized
 
@@ -172,15 +186,19 @@ More detail on each phase: [`docs/ROADMAP.md`](docs/ROADMAP.md)
 claims-denial-copilot/
 ├── README.md              ← you are here: the project plan
 ├── kb/                    ← the 50 denial scenarios and how each maps to a real code
+├── copilot/checks/        ← rule-based checks: date of service, prior authorization
 ├── data/reference/        ← carc_mapping.csv: the mapping as data the code will read
+├── data/synthetic/        ← invented test cases with hand-written expected answers
+├── tests/                 ← tests that compare every check's full output with those answers
 ├── evals/seed_scenarios/  ← tricky test cases carried over from v1, the start of the answer key
 ├── docs/
 │   ├── ROADMAP.md         ← phase details, tools, how scoring works
+│   ├── features/          ← one page per check: what it checks, codes, next actions
 │   └── build-log.md       ← what v1 taught and why the project changed direction
 └── v1-archive/            ← the original translator: prompts, outputs, scripts, screenshots
 ```
 
-Folders added as the phases land: `copilot/` (tools and AI engine), `evals/` scoring, `app/` (the screen), `analytics/` (SQL), `scripts/` (data generator).
+Folders added as the phases land: more of `copilot/` (remaining tools and the AI engine), `evals/` scoring, `app/` (the screen), `analytics/` (SQL), `scripts/` (data generator).
 
 ## 8. Glossary
 
