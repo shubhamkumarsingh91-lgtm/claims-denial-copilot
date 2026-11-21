@@ -95,7 +95,7 @@ The project runs in **5 phases over about 12–13 weeks** (about 7 hours a week)
 - [x] **Step 1.2:** Map every scenario to a real denial code (CARC) ([`kb/rejection_mapping.md`](kb/rejection_mapping.md), [`data/reference/carc_mapping.csv`](data/reference/carc_mapping.csv))
 - [x] **Step 1.3:** Tag each scenario as "all insurers" or "commercial only"
 - [x] **Step 1.4:** Add remark codes (RARCs) for the 7 scenarios that use the general code 16, and confirm the 4 marked "verify" (3 scenarios still marked "verify", see below)
-- [ ] **Step 1.5:** Add Medicaid-specific scenarios: spend-down, retroactive eligibility, timely filing, other insurance that pays first, provider enrollment
+- [x] **Step 1.5:** Add 8 Medicaid-specific scenarios: spend-down, patient liability, timely filing, retroactive eligibility, other insurance that pays first, managed care vs. fee-for-service, provider revalidation, non-rebatable drugs ([`kb/medicaid.md`](kb/medicaid.md))
 - [ ] **Step 1.6:** Build a generator that creates about 200 fake denials with patients, coverage dates, authorizations, and providers
 - [ ] **Step 1.7:** Write a one-page product requirements document (PRD): who it's for, the problem, what v1 does, how success is measured, what could go wrong
 
@@ -154,13 +154,15 @@ More detail on each phase: [`docs/ROADMAP.md`](docs/ROADMAP.md)
 
 ## 6. Where the project is today
 
-**Phase 1, steps 1.1–1.4 done.** All 50 scenarios now carry real denial codes, and the general code-16 ones also carry a remark code (RARC) saying exactly what's wrong:
+**Phase 1, steps 1.1–1.5 done.** All 58 scenarios (50 general plus 8 Medicaid) now carry real denial codes, and the general ones (like code 16) also carry a remark code (RARC) saying exactly what's wrong:
 
 | Status | Scenarios |
 |---|---|
-| Confirmed against the X12 list or a published payer/CMS source | 46 |
+| Confirmed against the X12 list or a published payer/CMS source | 54 |
 | Best fit, still to confirm | 3 |
 | Dropped (pre-existing condition, largely barred under the ACA) | 1 |
+
+**Medicaid layer (step 1.5):** spend-down not met (178), patient liability (142), timely filing (29), retro eligibility after a denial (26), other insurance must pay first (22 + MA04), billed fee-for-service when the member is in managed care (24), provider revalidation lapsed (B7), drug with no rebate agreement (211). All 8 codes and the remark code were confirmed active on the X12 lists on 2026-11-21.
 
 **Found while checking:** code 15 (authorization doesn't match) was **deactivated by X12 in 2018**, so RJ-044 was moved to code 296. Checking codes against the live list, not memory, is exactly what the copilot will have to do too.
 
@@ -171,21 +173,21 @@ More detail on each phase: [`docs/ROADMAP.md`](docs/ROADMAP.md)
 | Date of service (eligibility, coverage, timely filing) | 11 | all pass |
 | Prior authorization (missing, code, dates, units, provider) | 9 | all pass |
 
-Every test compares the **whole** output (every finding, code, explanation, piece of evidence, next action and note) with a hand-written answer, and also fails if a check ever emits a denial code that isn't in the reference mapping. Run them yourself:
+Every test compares the **whole** output (every finding, code, explanation, piece of evidence, next action and note) with a hand-written answer, and also fails if a check ever emits a denial code that isn't in the reference mapping. A second set of tests checks that each scenario's code, remark code, scope and status match across all three places they're written (the `kb/` files, the CSV and the mapping table). 161 tests in all. Run them yourself:
 
 ```bash
 pip install -r requirements-dev.txt
 python -m pytest tests/ -v
 ```
 
-**Next:** step 1.5, Medicaid-specific scenarios (which also adds timely filing, code 29, to the mapping), then the remaining checks: eligibility segments and retro eligibility in more depth, crossover and other insurance, frequency and duplicates, provider type and place of service.
+**Next:** step 1.6 (a generator for about 200 synthetic denials) and step 1.7 (a one-page PRD), then the remaining checks: eligibility segments and retro eligibility in more depth, crossover and other insurance, frequency and duplicates, provider type and place of service.
 
 ## 7. How the repository is organized
 
 ```
 claims-denial-copilot/
 ├── README.md              ← you are here: the project plan
-├── kb/                    ← the 50 denial scenarios and how each maps to a real code
+├── kb/                    ← the 58 denial scenarios (incl. 8 Medicaid) and how each maps to a real code
 ├── copilot/checks/        ← rule-based checks: date of service, prior authorization
 ├── data/reference/        ← carc_mapping.csv: the mapping as data the code will read
 ├── data/synthetic/        ← invented test cases with hand-written expected answers

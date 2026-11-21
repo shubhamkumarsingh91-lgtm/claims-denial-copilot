@@ -4,9 +4,8 @@ The rule payers follow: a claim is judged by the eligibility and coverage rules
 in effect ON THE DATE OF SERVICE, not today. Timely filing is a separate check,
 measured from the date of service to the date the claim was submitted.
 
-All denial codes used here come from data/reference/carc_mapping.csv, except
-CARC 29 (timely filing), which is a public X12 code added with the Medicaid
-scenarios in step 1.5.
+All denial codes used here come from data/reference/carc_mapping.csv
+(timely filing, CARC 29, is scenario RJ-053).
 """
 
 from __future__ import annotations

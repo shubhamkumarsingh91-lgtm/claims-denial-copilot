@@ -18,10 +18,9 @@ ROOT = Path(__file__).resolve().parents[1]
 DOS = json.loads((ROOT / "data/synthetic/dos_cases.json").read_text())
 PA = json.loads((ROOT / "data/synthetic/pa_cases.json").read_text())
 
-# Every denial code a check emits must exist in the reference mapping
-# (29 = timely filing, a public X12 code being added in step 1.5).
+# Every denial code a check emits must exist in the reference mapping.
 with open(ROOT / "data/reference/carc_mapping.csv", newline="") as f:
-    KNOWN_CARCS = {row["carc"] for row in csv.DictReader(f) if row["status"] != "dropped"} | {"29"}
+    KNOWN_CARCS = {row["carc"] for row in csv.DictReader(f) if row["status"] != "dropped"}
 
 
 def run_dos(case):
