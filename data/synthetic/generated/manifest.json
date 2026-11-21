@@ -1,0 +1,14 @@
+{
+  "seed": 20261121,
+  "row_counts": {
+    "members.csv": 200,
+    "eligibility_segments.csv": 201,
+    "other_coverage.csv": 3,
+    "providers.csv": 20,
+    "coverage_rules.csv": 18,
+    "authorizations.csv": 20,
+    "denials.csv": 200
+  },
+  "checkable_denials": 71,
+  "scenarios_covered": 57
+}

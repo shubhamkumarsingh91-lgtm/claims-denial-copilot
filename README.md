@@ -96,8 +96,8 @@ The project runs in **5 phases over about 12–13 weeks** (about 7 hours a week)
 - [x] **Step 1.3:** Tag each scenario as "all insurers" or "commercial only"
 - [x] **Step 1.4:** Add remark codes (RARCs) for the 7 scenarios that use the general code 16, and confirm the 4 marked "verify" (3 scenarios still marked "verify", see below)
 - [x] **Step 1.5:** Add 8 Medicaid-specific scenarios: spend-down, patient liability, timely filing, retroactive eligibility, other insurance that pays first, managed care vs. fee-for-service, provider revalidation, non-rebatable drugs ([`kb/medicaid.md`](kb/medicaid.md))
-- [ ] **Step 1.6:** Build a generator that creates about 200 fake denials with patients, coverage dates, authorizations, and providers
-- [ ] **Step 1.7:** Write a one-page product requirements document (PRD): who it's for, the problem, what v1 does, how success is measured, what could go wrong
+- [x] **Step 1.6:** Build a generator that creates 200 fake denials with patients, coverage dates, authorizations, and providers ([`scripts/generate_denials.py`](scripts/generate_denials.py), output in [`data/synthetic/generated/`](data/synthetic/generated/))
+- [x] **Step 1.7:** Write a one-page product requirements document (PRD): who it's for, the problem, what v1 does, how success is measured, what could go wrong ([`docs/PRD.md`](docs/PRD.md))
 
 **Done when:** no invented codes remain, and 200 synthetic denials exist.
 
@@ -154,7 +154,7 @@ More detail on each phase: [`docs/ROADMAP.md`](docs/ROADMAP.md)
 
 ## 6. Where the project is today
 
-**Phase 1, steps 1.1–1.5 done.** All 58 scenarios (50 general plus 8 Medicaid) now carry real denial codes, and the general ones (like code 16) also carry a remark code (RARC) saying exactly what's wrong:
+**Phase 1 done (steps 1.1–1.7).** All 58 scenarios (50 general plus 8 Medicaid) carry real denial codes, and the general ones (like code 16) also carry a remark code (RARC) saying exactly what's wrong. A [generator](data/synthetic/generated/) creates 200 synthetic denials whose facts actually cause each denial, and a [one-page PRD](docs/PRD.md) sets the target user and how success is measured.
 
 | Status | Scenarios |
 |---|---|
@@ -173,14 +173,14 @@ More detail on each phase: [`docs/ROADMAP.md`](docs/ROADMAP.md)
 | Date of service (eligibility, coverage, timely filing) | 11 | all pass |
 | Prior authorization (missing, code, dates, units, provider) | 9 | all pass |
 
-Every test compares the **whole** output (every finding, code, explanation, piece of evidence, next action and note) with a hand-written answer, and also fails if a check ever emits a denial code that isn't in the reference mapping. A second set of tests checks that each scenario's code, remark code, scope and status match across all three places they're written (the `kb/` files, the CSV and the mapping table). 161 tests in all. Run them yourself:
+Every test compares the **whole** output (every finding, code, explanation, piece of evidence, next action and note) with a hand-written answer, and also fails if a check ever emits a denial code that isn't in the reference mapping. A second set of tests checks that each scenario's code, remark code, scope and status match across all three places they're written (the `kb/` files, the CSV and the mapping table). A third set runs the real checks on all 71 checkable generated denials and confirms each one finds exactly the planted cause. 238 tests in all. Run them yourself:
 
 ```bash
 pip install -r requirements-dev.txt
 python -m pytest tests/ -v
 ```
 
-**Next:** step 1.6 (a generator for about 200 synthetic denials) and step 1.7 (a one-page PRD), then the remaining checks: eligibility segments and retro eligibility in more depth, crossover and other insurance, frequency and duplicates, provider type and place of service.
+**Next:** the remaining Phase 2 checks, starting with other insurance (TPL) and managed care vs. fee-for-service, since the generated data already plants those facts; then frequency and duplicates, provider type and place of service. Also still open: confirm the 3 "verify" scenarios (RJ-034, RJ-037, RJ-044).
 
 ## 7. How the repository is organized
 
@@ -190,17 +190,19 @@ claims-denial-copilot/
 ├── kb/                    ← the 58 denial scenarios (incl. 8 Medicaid) and how each maps to a real code
 ├── copilot/checks/        ← rule-based checks: date of service, prior authorization
 ├── data/reference/        ← carc_mapping.csv: the mapping as data the code will read
-├── data/synthetic/        ← invented test cases with hand-written expected answers
+├── data/synthetic/        ← invented test cases with hand-written answers, plus generated/ (200 denials)
+├── scripts/               ← generate_denials.py: rebuilds the 200 synthetic denials
 ├── tests/                 ← tests that compare every check's full output with those answers
 ├── evals/seed_scenarios/  ← tricky test cases carried over from v1, the start of the answer key
 ├── docs/
 │   ├── ROADMAP.md         ← phase details, tools, how scoring works
+│   ├── PRD.md             ← one-page product requirements: user, problem, v1 scope, metrics, risks
 │   ├── features/          ← one page per check: what it checks, codes, next actions
 │   └── build-log.md       ← what v1 taught and why the project changed direction
 └── v1-archive/            ← the original translator: prompts, outputs, scripts, screenshots
 ```
 
-Folders added as the phases land: more of `copilot/` (remaining tools and the AI engine), `evals/` scoring, `app/` (the screen), `analytics/` (SQL), `scripts/` (data generator).
+Folders added as the phases land: more of `copilot/` (remaining tools and the AI engine), `evals/` scoring, `app/` (the screen), `analytics/` (SQL).
 
 ## 8. Glossary
 
