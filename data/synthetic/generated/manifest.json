@@ -3,13 +3,13 @@
   "row_counts": {
     "plans.csv": 3,
     "members.csv": 200,
-    "eligibility_segments.csv": 204,
-    "other_coverage.csv": 9,
-    "providers.csv": 20,
+    "eligibility_segments.csv": 205,
+    "other_coverage.csv": 8,
+    "providers.csv": 40,
     "coverage_rules.csv": 18,
     "authorizations.csv": 16,
     "denials.csv": 200
   },
-  "checkable_denials": 80,
+  "checkable_denials": 98,
   "scenarios_covered": 58
 }

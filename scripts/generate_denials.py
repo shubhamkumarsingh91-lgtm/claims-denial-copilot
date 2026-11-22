@@ -43,8 +43,7 @@ COVERED_CODES = ["99213", "99214", "90834", "70551", "27447", "97110"]
 PA_CODES = {"70551", "27447", "97110"}   # need prior authorization (synthetic rule)
 NON_PA_CODES = ["99213", "99214", "90834"]
 UNCOVERED_CODE = "99499"                  # deliberately not a covered benefit on any plan
-LAPSED_PROVIDER = "SYN-NPI-020"           # enrollment ended 2025-12-31
-LAPSED_PROVIDER_CARC = "B7"
+HEALTHY_PROVIDERS = 20                    # SYN-NPI-001..020: enrolled, licensed, not excluded
 
 # Scenarios the checks can diagnose today: scenario -> (check, finding, next action)
 CHECKABLE = {
@@ -66,6 +65,12 @@ CHECKABLE = {
     "RJ-055": ("tpl_check", "other_coverage_primary", "bill_other_coverage"),
     "RJ-056": ("payer_check", "billed_ffs_member_in_managed_care", "bill_correct_payer"),
     "RJ-059": ("payer_check", "wrong_payer", "bill_correct_payer"),
+    "RJ-028": ("provider_check", "license_expired", "fix_provider_enrollment"),
+    "RJ-029": ("provider_check", "provider_not_on_file", "correct_and_resubmit"),
+    "RJ-030": ("provider_check", "dos_before_enrollment", "fix_provider_enrollment"),
+    "RJ-033": ("provider_check", "provider_excluded", "write_off"),
+    "RJ-035": ("provider_check", "provider_not_enrolled", "fix_provider_enrollment"),
+    "RJ-057": ("provider_check", "enrollment_ended", "fix_provider_enrollment"),
 }
 
 
@@ -102,13 +107,14 @@ def generate(out_dir: Path, seed: int = SEED) -> dict:
             return "COMMERCIAL-X"
         return rng.choice(plan_ids)
 
-    providers = [
-        {"npi": f"SYN-NPI-{n:03d}", "name": f"Synthetic Clinic {n:02d}",
-         "enrolled_from": "2020-01-01", "enrolled_to": ""}
-        for n in range(1, 20)
-    ] + [{"npi": LAPSED_PROVIDER, "name": "Synthetic Clinic 20 (enrollment lapsed)",
-          "enrolled_from": "2019-01-01", "enrolled_to": "2025-12-31"}]
-    active_npis = [p["npi"] for p in providers if not p["enrolled_to"]]
+    def provider(npi, name, provider_type="individual", enrolled_from="2020-01-01", enrolled_to="",
+                 end_reason="", license_expires="2028-06-30", excluded_from=""):
+        return {"npi": npi, "name": name, "provider_type": provider_type, "enrolled_from": enrolled_from,
+                "enrolled_to": enrolled_to, "end_reason": end_reason, "license_expires": license_expires,
+                "excluded_from": excluded_from}
+
+    providers = [provider(f"SYN-NPI-{n:03d}", f"Synthetic Clinic {n:02d}") for n in range(1, HEALTHY_PROVIDERS + 1)]
+    active_npis = [p["npi"] for p in providers]
 
     coverage_rules = [
         {"plan": p, "procedure_code": c, "effective_start": "2024-01-01", "effective_end": "",
@@ -160,8 +166,27 @@ def generate(out_dir: Path, seed: int = SEED) -> dict:
             switch = dos - timedelta(days=rng.randint(10, 90))
             seg_list = [("COMMERCIAL-X", date(2024, 1, 1), switch - timedelta(days=1)), ("MEDICAID-FFS", switch, None)]
             billed_plan = "COMMERCIAL-X"
-        elif sc["carc"] == LAPSED_PROVIDER_CARC:  # RJ-028/030/033/035/057: provider not eligible on DOS
-            npi = LAPSED_PROVIDER
+        elif sid in ("RJ-028", "RJ-030", "RJ-033", "RJ-035", "RJ-057"):
+            # A dedicated provider whose record has exactly the one fact that causes this denial.
+            npi = f"SYN-NPI-P{n:03d}"
+            if sid == "RJ-028":    # license expired before the service
+                providers.append(provider(npi, f"Synthetic Clinic P{n:03d}",
+                                          license_expires=(dos - timedelta(days=rng.randint(1, 90))).isoformat()))
+            elif sid == "RJ-030":  # credentialing finished after the service
+                providers.append(provider(npi, f"Synthetic Clinic P{n:03d}",
+                                          enrolled_from=(dos + timedelta(days=rng.randint(5, 60))).isoformat()))
+            elif sid == "RJ-033":  # on the exclusion list before the service
+                providers.append(provider(npi, f"Synthetic Clinic P{n:03d}",
+                                          excluded_from=(dos - timedelta(days=rng.randint(10, 300))).isoformat()))
+            elif sid == "RJ-035":  # facility never enrolled
+                providers.append(provider(npi, f"Synthetic Surgery Center P{n:03d}", provider_type="facility",
+                                          enrolled_from=""))
+            else:                  # RJ-057: revalidation not completed, enrollment ended before the service
+                providers.append(provider(npi, f"Synthetic Clinic P{n:03d}", enrolled_from="2019-01-01",
+                                          enrolled_to=(dos - timedelta(days=rng.randint(1, 90))).isoformat(),
+                                          end_reason="revalidation_not_completed"))
+        elif sid == "RJ-029":  # NPI on the claim matches no provider record
+            npi = f"SYN-NPI-X{n:03d}"
 
         if sid in ("RJ-039", "RJ-040", "RJ-041", "RJ-042", "RJ-043"):
             code = rng.choice(sorted(PA_CODES))

@@ -22,7 +22,7 @@ sys.path.insert(0, str(ROOT / "scripts"))
 
 import generate_denials  # noqa: E402
 from copilot.checks import (  # noqa: E402
-    check_billed_payer, check_date_of_service, check_other_coverage, check_prior_auth,
+    check_billed_payer, check_date_of_service, check_other_coverage, check_prior_auth, check_provider_eligibility,
 )
 
 
@@ -61,9 +61,9 @@ def test_counts_and_manifest():
     assert set(per) == active and manifest["scenarios_covered"] == 58
     assert min(per.values()) >= 3
     checkable = [d for d in DENIALS if d["checkable_by"]]
-    assert len(checkable) == manifest["checkable_denials"] == 80
+    assert len(checkable) == manifest["checkable_denials"] == 98
     assert Counter(d["checkable_by"] for d in checkable) == \
-        {"dos_check": 43, "pa_matcher": 20, "tpl_check": 9, "payer_check": 8}
+        {"dos_check": 38, "pa_matcher": 20, "tpl_check": 8, "payer_check": 8, "provider_check": 24}
 
 
 def test_codes_match_mapping():
@@ -80,7 +80,9 @@ def test_ids_unique_and_linked():
     npis = {p["npi"] for p in PROVIDERS}
     plans = {r["plan"] for r in RULES}
     for d in DENIALS:
-        assert d["member_id"] in members and d["rendering_npi"] in npis and d["billed_plan"] in plans
+        assert d["member_id"] in members and d["billed_plan"] in plans
+        # RJ-029's whole point is an NPI that matches no provider record
+        assert (d["rendering_npi"] in npis) == (d["scenario_id"] != "RJ-029"), d["denial_id"]
     for row in SEGMENTS + AUTHS + OTHER:
         assert row["member_id"] in members
     for a in AUTHS:
@@ -141,6 +143,10 @@ def run_check(name, d):
             {"claim_id": d["claim_id"], "member_id": d["member_id"], "date_of_service": d["date_of_service"],
              "billed_plan": d["billed_plan"], "primary_paid_amount": None},
             OTHER, PLANS[d["billed_plan"]]["payer_type"], denial_carc=d["carc"])
+    if name == "provider_check":
+        return check_provider_eligibility(
+            {"claim_id": d["claim_id"], "date_of_service": d["date_of_service"], "rendering_npi": d["rendering_npi"]},
+            PROVIDERS)
     if name == "payer_check":
         return check_billed_payer(
             {"claim_id": d["claim_id"], "date_of_service": d["date_of_service"], "billed_plan": d["billed_plan"]},
@@ -148,13 +154,13 @@ def run_check(name, d):
     raise ValueError(name)
 
 
-ALL_CHECKS = ("dos_check", "pa_matcher", "tpl_check", "payer_check")
+ALL_CHECKS = ("dos_check", "pa_matcher", "tpl_check", "payer_check", "provider_check")
 CHECKABLE_DENIALS = [d for d in DENIALS if d["checkable_by"]]
 
 
 @pytest.mark.parametrize("d", CHECKABLE_DENIALS, ids=lambda d: f"{d['denial_id']}-{d['scenario_id']}")
 def test_no_false_alarms_from_other_checks(d):
-    """Only the planted problem may show up: every OTHER check must find nothing."""
+    """Only the planted problem may show up: every OTHER check (four of them) must find nothing."""
     for name in ALL_CHECKS:
         if name != d["checkable_by"]:
             result = run_check(name, d)

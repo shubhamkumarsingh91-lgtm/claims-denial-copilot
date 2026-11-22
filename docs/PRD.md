@@ -19,7 +19,7 @@ Billers know what denial codes mean. What they lack is time. Each denial means l
 For one denied claim, the copilot:
 
 1. Reads the denial code and claim details.
-2. Runs rule-based checks against the facts (**built:** date of service, prior authorization, other insurance, billed payer; **next:** provider enrollment, frequency and duplicates, provider and place of service, code-pair edits, NPI).
+2. Runs rule-based checks against the facts (**built:** date of service, prior authorization, other insurance, billed payer, provider eligibility; **next:** frequency and duplicates, provider and place of service, code-pair edits, NPI).
 3. Names the root cause with the evidence side by side.
 4. Picks one next action: correct and resubmit, resubmit as is, request or update an authorization, bill other coverage, appeal, or write off.
 5. Drafts the fix or appeal, and says **"needs human review"** when facts conflict or evidence is thin.
