@@ -44,7 +44,8 @@ def run_tpl(case):
 
 
 def run_pay(case):
-    return check_billed_payer(case["claim"], case["eligibility_segments"], set(PAY["managed_care_plans"])).to_dict()
+    return check_billed_payer(case["claim"], case["eligibility_segments"],
+                              set(PAY["managed_care_plans"]), set(PAY["fee_for_service_plans"])).to_dict()
 
 
 RUNNERS = {"DOS": run_dos, "PA-": run_pa, "TPL": run_tpl, "PAY": run_pay}

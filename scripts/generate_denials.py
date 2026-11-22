@@ -65,6 +65,7 @@ CHECKABLE = {
     "RJ-009": ("tpl_check", "other_coverage_primary", "bill_other_coverage"),
     "RJ-055": ("tpl_check", "other_coverage_primary", "bill_other_coverage"),
     "RJ-056": ("payer_check", "billed_ffs_member_in_managed_care", "bill_correct_payer"),
+    "RJ-059": ("payer_check", "wrong_payer", "bill_correct_payer"),
 }
 
 
@@ -155,6 +156,10 @@ def generate(out_dir: Path, seed: int = SEED) -> dict:
         elif sid == "RJ-056":  # in managed care on the DOS, billed fee-for-service
             seg_list = [("MEDICAID-MCO-A", date(2025, 1, 1), None)]
             billed_plan = "MEDICAID-FFS"
+        elif sid == "RJ-059":  # old card on file: left the employer plan, now on Medicaid, employer plan billed
+            switch = dos - timedelta(days=rng.randint(10, 90))
+            seg_list = [("COMMERCIAL-X", date(2024, 1, 1), switch - timedelta(days=1)), ("MEDICAID-FFS", switch, None)]
+            billed_plan = "COMMERCIAL-X"
         elif sc["carc"] == LAPSED_PROVIDER_CARC:  # RJ-028/030/033/035/057: provider not eligible on DOS
             npi = LAPSED_PROVIDER
 

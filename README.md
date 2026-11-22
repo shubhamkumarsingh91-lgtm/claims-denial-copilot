@@ -111,7 +111,7 @@ The project runs in **5 phases over about 12–13 weeks** (about 7 hours a week)
   - [x] `check_auth`: does the prior approval match the service, units, provider, and date? Built as the [prior auth matcher](docs/features/pa-matcher.md)
   - `check_ncci`: are these two procedure codes allowed together? (public Medicare edit tables)
   - `lookup_npi`: is the provider's ID active? (public national registry)
-  - Added beyond the original five: [other-insurance check](docs/features/tpl-check.md) (should another insurer pay first?) and [billed-payer check](docs/features/payer-check.md) (managed care vs. fee-for-service)
+  - Added beyond the original five: [other-insurance check](docs/features/tpl-check.md) (should another insurer pay first?) and [billed-payer check](docs/features/payer-check.md) (was the claim sent to the right plan?)
 - [ ] **Step 2.2:** Connect an AI model (Claude, with a local model as an option) that decides which tools to call
 - [ ] **Step 2.3:** Make it answer in a fixed format: root cause, evidence, fix steps, appeal draft, escalate yes/no
 - [ ] **Step 2.4:** Run one denial end to end with a single command
@@ -155,11 +155,11 @@ More detail on each phase: [`docs/ROADMAP.md`](docs/ROADMAP.md)
 
 ## 6. Where the project is today
 
-**Phase 1 done (steps 1.1–1.7).** All 58 scenarios (50 general plus 8 Medicaid) carry real denial codes, and the general ones (like code 16) also carry a remark code (RARC) saying exactly what's wrong. A [generator](data/synthetic/generated/) creates 200 synthetic denials whose facts actually cause each denial, and a [one-page PRD](docs/PRD.md) sets the target user and how success is measured.
+**Phase 1 done (steps 1.1–1.7).** All 59 scenarios (51 general plus 8 Medicaid) carry real denial codes, and the general ones (like code 16) also carry a remark code (RARC) saying exactly what's wrong. A [generator](data/synthetic/generated/) creates 200 synthetic denials whose facts actually cause each denial, and a [one-page PRD](docs/PRD.md) sets the target user and how success is measured.
 
 | Status | Scenarios |
 |---|---|
-| Confirmed against the X12 list or a published payer/CMS source | 54 |
+| Confirmed against the X12 list or a published payer/CMS source | 55 |
 | Best fit, still to confirm | 3 |
 | Dropped (pre-existing condition, largely barred under the ACA) | 1 |
 
@@ -172,18 +172,18 @@ More detail on each phase: [`docs/ROADMAP.md`](docs/ROADMAP.md)
 | Check | Codes | Hand-written test cases | Generated denials it diagnoses |
 |---|---|---|---|
 | [Date of service](docs/features/dos-check.md) (eligibility, coverage, timely filing) | 26, 27, 31, 200, 204, 29 | 11 | 43 |
-| [Prior authorization](docs/features/pa-matcher.md) (missing, code, dates, units, provider) | 197, 284, 302, 198, 296 | 9 | 24 |
+| [Prior authorization](docs/features/pa-matcher.md) (missing, code, dates, units, provider) | 197, 284, 302, 198, 296 | 9 | 20 |
 | [Other insurance](docs/features/tpl-check.md) (TPL / coordination of benefits) | 22 | 9 | 9 |
-| [Billed payer](docs/features/payer-check.md) (managed care vs. fee-for-service) | 24 | 7 | 4 |
+| [Billed payer](docs/features/payer-check.md) (managed care vs. fee-for-service, any other wrong payer) | 24, 109 | 9 | 8 |
 
-The four checks cover 17 of the 57 active scenarios, which is 80 of the 200 generated denials.
+The four checks cover 18 of the 58 active scenarios, which is 80 of the 200 generated denials.
 
 How it's tested:
 - **Hand-written cases:** every test compares the **whole** output (every finding, code, explanation, piece of evidence, next action and note) with a hand-written answer, and fails if a check ever emits a denial code that isn't in the reference mapping.
 - **Mapping consistency:** each scenario's code, remark code, scope and status must match across the `kb/` files, the CSV and the mapping table.
 - **Generated denials:** the real checks run on all 80 checkable generated denials. The right check must find exactly the planted cause, and **the other three checks must find nothing** (no false alarms).
 
-359 tests in all. Run them yourself:
+365 tests in all. Run them yourself:
 
 ```bash
 pip install -r requirements-dev.txt
@@ -197,7 +197,7 @@ python -m pytest tests/ -v
 ```
 claims-denial-copilot/
 ├── README.md              ← you are here: the project plan
-├── kb/                    ← the 58 denial scenarios (incl. 8 Medicaid) and how each maps to a real code
+├── kb/                    ← the 59 denial scenarios (incl. 8 Medicaid) and how each maps to a real code
 ├── copilot/checks/        ← rule-based checks: date of service, prior authorization
 ├── data/reference/        ← carc_mapping.csv: the mapping as data the code will read
 ├── data/synthetic/        ← invented test cases with hand-written answers, plus generated/ (200 denials)

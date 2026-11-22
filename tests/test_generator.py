@@ -58,12 +58,12 @@ def test_counts_and_manifest():
         assert len(read(name)) == n, name
     active = {s for s, r in MAPPING.items() if r["status"] != "dropped"}
     per = Counter(d["scenario_id"] for d in DENIALS)
-    assert set(per) == active and manifest["scenarios_covered"] == 57
+    assert set(per) == active and manifest["scenarios_covered"] == 58
     assert min(per.values()) >= 3
     checkable = [d for d in DENIALS if d["checkable_by"]]
     assert len(checkable) == manifest["checkable_denials"] == 80
     assert Counter(d["checkable_by"] for d in checkable) == \
-        {"dos_check": 43, "pa_matcher": 24, "tpl_check": 9, "payer_check": 4}
+        {"dos_check": 43, "pa_matcher": 20, "tpl_check": 9, "payer_check": 8}
 
 
 def test_codes_match_mapping():
@@ -121,6 +121,7 @@ def _auths():
 PA_REQUIRED = {r["procedure_code"] for r in RULES if r["pa_required"] == "yes"}
 PLANS = {p["plan"]: p for p in read("plans.csv")}
 MANAGED_CARE = {p for p, row in PLANS.items() if row["plan_type"] == "managed_care"}
+FEE_FOR_SERVICE = {p for p, row in PLANS.items() if row["plan_type"] == "fee_for_service"}
 
 
 def run_check(name, d):
@@ -143,7 +144,7 @@ def run_check(name, d):
     if name == "payer_check":
         return check_billed_payer(
             {"claim_id": d["claim_id"], "date_of_service": d["date_of_service"], "billed_plan": d["billed_plan"]},
-            _segments(d["member_id"]), MANAGED_CARE)
+            _segments(d["member_id"]), MANAGED_CARE, FEE_FOR_SERVICE)
     raise ValueError(name)
 
 

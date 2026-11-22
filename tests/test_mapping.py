@@ -51,14 +51,14 @@ TABLE = {
 
 
 def test_counts():
-    assert len(CSV_ROWS) == 58
+    assert len(CSV_ROWS) == 59
     assert set(CSV_ROWS) == set(TABLE)
     # RJ-010 was dropped and has no CARC line in the KB
     assert set(CSV_ROWS) - set(KB) <= {"RJ-010"}
 
 
 def test_ids_are_sequential():
-    assert sorted(CSV_ROWS) == [f"RJ-{n:03d}" for n in range(1, 59)]
+    assert sorted(CSV_ROWS) == [f"RJ-{n:03d}" for n in range(1, 60)]
 
 
 @pytest.mark.parametrize("sid", sorted(KB))

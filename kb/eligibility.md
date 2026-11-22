@@ -523,3 +523,43 @@ Policy cancelled retroactively to 01-Jan-2026; DOS is 20-Feb-2026.
 **Keywords:** eligibility, retroactive termination, retro-term, coverage cancellation, claw-back
 
 ---
+
+### RJ-059 – Claim Sent to the Wrong Payer
+**Code:** ELG-014  
+**CARC:** 109 (Confirmed; payer scope: all)  
+**Severity:** High  
+**Sub-Category:** Wrong Payer
+
+**Scenario:**  
+Patient left an employer plan on 31-Dec-2025 and has had Medicaid since 01-Jan-2026. The clinic still had the old card on file and billed the employer plan for a 14-Feb-2026 visit.
+
+---
+
+**Patient Explanation**
+
+1. **What happened:** The bill went to an insurance plan you didn't have on the day of your visit.
+2. **What it means for you:** Nothing is owed yet; the provider needs to send it to the right plan.
+3. **What you should do next:** Give the provider your current insurance card.
+
+---
+
+**Provider Action**
+
+1. **Likely cause:** Outdated insurance on file; the claim went to a plan that didn't cover the patient on the DOS.
+2. **What to verify:** Which plan covered the patient on the DOS (not today), and that plan's filing deadline.
+3. **Next action:** Send the claim to the correct payer; update the patient's insurance on file.
+
+---
+
+**Analyst Notes**
+
+1. **Interpretation:** Billed payer ≠ payer on the DOS, and it isn't a managed care vs. fee-for-service mix-up (that's RJ-056, code 24).
+2. **Likely issue area:** Registration / insurance verification.
+3. **Technical notes:** ELG-014; checked by `copilot/checks/payer_check.py`.
+4. **Next debugging step:** Verify insurance at every visit, not just the first.
+
+---
+
+**Keywords:** wrong payer, incorrect payer, send to correct payer, outdated insurance, insurance verification
+
+---
