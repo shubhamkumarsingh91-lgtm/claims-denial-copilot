@@ -105,12 +105,13 @@ The project runs in **5 phases over about 12–13 weeks** (about 7 hours a week)
 
 *Goal: the copilot can take one denial and produce a checked, structured answer.*
 
-- [ ] **Step 2.1:** Build five tools the AI can call (2 of 5 built as rule-based checks, see below):
+- [ ] **Step 2.1:** Build the tools the AI can call (2 of the original 5 built as rule-based checks, plus 2 added; see below):
   - [x] `check_eligibility`: was the patient covered **on the date of service**? Built as the [date-of-service check](docs/features/dos-check.md), which also checks coverage on that date and timely filing
   - `lookup_carc`: what kind of denial is this code?
   - [x] `check_auth`: does the prior approval match the service, units, provider, and date? Built as the [prior auth matcher](docs/features/pa-matcher.md)
   - `check_ncci`: are these two procedure codes allowed together? (public Medicare edit tables)
   - `lookup_npi`: is the provider's ID active? (public national registry)
+  - Added beyond the original five: [other-insurance check](docs/features/tpl-check.md) (should another insurer pay first?) and [billed-payer check](docs/features/payer-check.md) (managed care vs. fee-for-service)
 - [ ] **Step 2.2:** Connect an AI model (Claude, with a local model as an option) that decides which tools to call
 - [ ] **Step 2.3:** Make it answer in a fixed format: root cause, evidence, fix steps, appeal draft, escalate yes/no
 - [ ] **Step 2.4:** Run one denial end to end with a single command
@@ -166,21 +167,30 @@ More detail on each phase: [`docs/ROADMAP.md`](docs/ROADMAP.md)
 
 **Found while checking:** code 15 (authorization doesn't match) was **deactivated by X12 in 2018**, so RJ-044 was moved to code 296. Checking codes against the live list, not memory, is exactly what the copilot will have to do too.
 
-**Phase 2 started early: the first two checks work.** The [date-of-service check](docs/features/dos-check.md) and the [prior auth matcher](docs/features/pa-matcher.md) are plain Python rules (no AI yet). Each one says exactly which rule failed, which denial code that points to, the evidence side by side, and the next action for the biller. They were pulled forward because every other check depends on the date of service, and because they're easy to test.
+**Phase 2 in progress: four checks work.** They're plain Python rules (no AI yet). Each one says exactly which rule failed, which denial code that points to, the evidence side by side, and the next action for the biller.
 
-| Check | Synthetic test cases | Result |
-|---|---|---|
-| Date of service (eligibility, coverage, timely filing) | 11 | all pass |
-| Prior authorization (missing, code, dates, units, provider) | 9 | all pass |
+| Check | Codes | Hand-written test cases | Generated denials it diagnoses |
+|---|---|---|---|
+| [Date of service](docs/features/dos-check.md) (eligibility, coverage, timely filing) | 26, 27, 31, 200, 204, 29 | 11 | 43 |
+| [Prior authorization](docs/features/pa-matcher.md) (missing, code, dates, units, provider) | 197, 284, 302, 198, 296 | 9 | 24 |
+| [Other insurance](docs/features/tpl-check.md) (TPL / coordination of benefits) | 22 | 9 | 9 |
+| [Billed payer](docs/features/payer-check.md) (managed care vs. fee-for-service) | 24 | 7 | 4 |
 
-Every test compares the **whole** output (every finding, code, explanation, piece of evidence, next action and note) with a hand-written answer, and also fails if a check ever emits a denial code that isn't in the reference mapping. A second set of tests checks that each scenario's code, remark code, scope and status match across all three places they're written (the `kb/` files, the CSV and the mapping table). A third set runs the real checks on all 71 checkable generated denials and confirms each one finds exactly the planted cause. 238 tests in all. Run them yourself:
+The four checks cover 17 of the 57 active scenarios, which is 80 of the 200 generated denials.
+
+How it's tested:
+- **Hand-written cases:** every test compares the **whole** output (every finding, code, explanation, piece of evidence, next action and note) with a hand-written answer, and fails if a check ever emits a denial code that isn't in the reference mapping.
+- **Mapping consistency:** each scenario's code, remark code, scope and status must match across the `kb/` files, the CSV and the mapping table.
+- **Generated denials:** the real checks run on all 80 checkable generated denials. The right check must find exactly the planted cause, and **the other three checks must find nothing** (no false alarms).
+
+359 tests in all. Run them yourself:
 
 ```bash
 pip install -r requirements-dev.txt
 python -m pytest tests/ -v
 ```
 
-**Next:** the remaining Phase 2 checks, starting with other insurance (TPL) and managed care vs. fee-for-service, since the generated data already plants those facts; then frequency and duplicates, provider type and place of service. Also still open: confirm the 3 "verify" scenarios (RJ-034, RJ-037, RJ-044).
+**Next:** provider enrollment (code B7: the generated data already has a provider whose enrollment lapsed), then frequency and duplicates, provider type and place of service, and spend-down. Also still open: confirm the 3 "verify" scenarios (RJ-034, RJ-037, RJ-044).
 
 ## 7. How the repository is organized
 

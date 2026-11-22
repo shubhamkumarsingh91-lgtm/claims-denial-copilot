@@ -16,13 +16,14 @@ RESUBMIT_AS_IS = "resubmit_as_is"            # the facts now support payment (e.
 REQUEST_RETRO_AUTH = "request_retro_auth"
 REQUEST_AUTH_UPDATE = "request_auth_update"  # extend dates or add units to an existing auth
 APPEAL = "appeal"
-BILL_OTHER_COVERAGE = "bill_other_coverage"
+BILL_OTHER_COVERAGE = "bill_other_coverage"   # another insurer, or the patient, should be billed first
+BILL_CORRECT_PAYER = "bill_correct_payer"     # the claim went to the wrong plan (e.g. managed care vs FFS)
 WRITE_OFF = "write_off"
 NO_ACTION = "no_action"
 
 NEXT_ACTIONS = {
     CORRECT_AND_RESUBMIT, RESUBMIT_AS_IS, REQUEST_RETRO_AUTH, REQUEST_AUTH_UPDATE,
-    APPEAL, BILL_OTHER_COVERAGE, WRITE_OFF, NO_ACTION,
+    APPEAL, BILL_OTHER_COVERAGE, BILL_CORRECT_PAYER, WRITE_OFF, NO_ACTION,
 }
 
 

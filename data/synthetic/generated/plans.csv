@@ -1,0 +1,4 @@
+plan,payer_type,plan_type
+COMMERCIAL-X,commercial,commercial
+MEDICAID-FFS,medicaid,fee_for_service
+MEDICAID-MCO-A,medicaid,managed_care

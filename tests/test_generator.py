@@ -21,7 +21,9 @@ GEN = ROOT / "data/synthetic/generated"
 sys.path.insert(0, str(ROOT / "scripts"))
 
 import generate_denials  # noqa: E402
-from copilot.checks import check_date_of_service, check_prior_auth  # noqa: E402
+from copilot.checks import (  # noqa: E402
+    check_billed_payer, check_date_of_service, check_other_coverage, check_prior_auth,
+)
 
 
 def read(name):
@@ -59,7 +61,9 @@ def test_counts_and_manifest():
     assert set(per) == active and manifest["scenarios_covered"] == 57
     assert min(per.values()) >= 3
     checkable = [d for d in DENIALS if d["checkable_by"]]
-    assert len(checkable) == manifest["checkable_denials"] == 71
+    assert len(checkable) == manifest["checkable_denials"] == 80
+    assert Counter(d["checkable_by"] for d in checkable) == \
+        {"dos_check": 43, "pa_matcher": 24, "tpl_check": 9, "payer_check": 4}
 
 
 def test_codes_match_mapping():
@@ -115,22 +119,50 @@ def _auths():
 
 
 PA_REQUIRED = {r["procedure_code"] for r in RULES if r["pa_required"] == "yes"}
+PLANS = {p["plan"]: p for p in read("plans.csv")}
+MANAGED_CARE = {p for p, row in PLANS.items() if row["plan_type"] == "managed_care"}
 
 
-@pytest.mark.parametrize("d", [d for d in DENIALS if d["checkable_by"]], ids=lambda d: f"{d['denial_id']}-{d['scenario_id']}")
-def test_check_finds_planted_cause(d):
-    if d["checkable_by"] == "dos_check":
-        result = check_date_of_service(
+def run_check(name, d):
+    """Run one check on one generated denial, using only the generated tables."""
+    if name == "dos_check":
+        return check_date_of_service(
             {"claim_id": d["claim_id"], "date_of_service": d["date_of_service"],
              "submission_date": d["submission_date"], "procedure_code": d["procedure_code"]},
-            _segments(d["member_id"]), coverage_rules=_rules(), denial_carc=d["carc"],
-        )
-    else:
-        result = check_prior_auth(
+            _segments(d["member_id"]), coverage_rules=_rules(), denial_carc=d["carc"])
+    if name == "pa_matcher":
+        return check_prior_auth(
             {"claim_id": d["claim_id"], "member_id": d["member_id"], "procedure_code": d["procedure_code"],
              "date_of_service": d["date_of_service"], "units": int(d["units"]), "rendering_npi": d["rendering_npi"]},
-            _auths(), pa_required=d["procedure_code"] in PA_REQUIRED,
-        )
+            _auths(), pa_required=d["procedure_code"] in PA_REQUIRED)
+    if name == "tpl_check":
+        return check_other_coverage(
+            {"claim_id": d["claim_id"], "member_id": d["member_id"], "date_of_service": d["date_of_service"],
+             "billed_plan": d["billed_plan"], "primary_paid_amount": None},
+            OTHER, PLANS[d["billed_plan"]]["payer_type"], denial_carc=d["carc"])
+    if name == "payer_check":
+        return check_billed_payer(
+            {"claim_id": d["claim_id"], "date_of_service": d["date_of_service"], "billed_plan": d["billed_plan"]},
+            _segments(d["member_id"]), MANAGED_CARE)
+    raise ValueError(name)
+
+
+ALL_CHECKS = ("dos_check", "pa_matcher", "tpl_check", "payer_check")
+CHECKABLE_DENIALS = [d for d in DENIALS if d["checkable_by"]]
+
+
+@pytest.mark.parametrize("d", CHECKABLE_DENIALS, ids=lambda d: f"{d['denial_id']}-{d['scenario_id']}")
+def test_no_false_alarms_from_other_checks(d):
+    """Only the planted problem may show up: every OTHER check must find nothing."""
+    for name in ALL_CHECKS:
+        if name != d["checkable_by"]:
+            result = run_check(name, d)
+            assert result.findings == [], f"{name} raised a false alarm on {d['denial_id']} ({d['scenario_id']})"
+
+
+@pytest.mark.parametrize("d", CHECKABLE_DENIALS, ids=lambda d: f"{d['denial_id']}-{d['scenario_id']}")
+def test_check_finds_planted_cause(d):
+    result = run_check(d["checkable_by"], d)
 
     assert result.next_action == d["expected_next_action"]
     if d["expected_finding"] == "denial_contradicted":

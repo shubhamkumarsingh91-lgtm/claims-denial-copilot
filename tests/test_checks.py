@@ -11,12 +11,14 @@ from pathlib import Path
 
 import pytest
 
-from copilot.checks import check_date_of_service, check_prior_auth
+from copilot.checks import check_billed_payer, check_date_of_service, check_other_coverage, check_prior_auth
 from copilot.checks.result import NEXT_ACTIONS
 
 ROOT = Path(__file__).resolve().parents[1]
 DOS = json.loads((ROOT / "data/synthetic/dos_cases.json").read_text())
 PA = json.loads((ROOT / "data/synthetic/pa_cases.json").read_text())
+TPL = json.loads((ROOT / "data/synthetic/tpl_cases.json").read_text())
+PAY = json.loads((ROOT / "data/synthetic/payer_cases.json").read_text())
 
 # Every denial code a check emits must exist in the reference mapping.
 with open(ROOT / "data/reference/carc_mapping.csv", newline="") as f:
@@ -34,19 +36,33 @@ def run_pa(case):
     return check_prior_auth(case["claim"], PA["authorizations"], pa_required=case["pa_required"]).to_dict()
 
 
-@pytest.mark.parametrize("case", DOS["cases"], ids=[c["id"] for c in DOS["cases"]])
-def test_dos_case(case):
-    assert run_dos(case) == case["expected"]
+def run_tpl(case):
+    return check_other_coverage(
+        case["claim"], TPL["other_coverage"], case["billed_payer_type"],
+        medicaid_allowed=case["medicaid_allowed"], denial_carc=case["denial_carc"],
+    ).to_dict()
 
 
-@pytest.mark.parametrize("case", PA["cases"], ids=[c["id"] for c in PA["cases"]])
-def test_pa_case(case):
-    assert run_pa(case) == case["expected"]
+def run_pay(case):
+    return check_billed_payer(case["claim"], case["eligibility_segments"], set(PAY["managed_care_plans"])).to_dict()
 
 
-@pytest.mark.parametrize("case", DOS["cases"] + PA["cases"], ids=[c["id"] for c in DOS["cases"] + PA["cases"]])
+RUNNERS = {"DOS": run_dos, "PA-": run_pa, "TPL": run_tpl, "PAY": run_pay}
+ALL_CASES = DOS["cases"] + PA["cases"] + TPL["cases"] + PAY["cases"]
+
+
+def run(case):
+    return RUNNERS[case["id"][:3]](case)
+
+
+@pytest.mark.parametrize("case", ALL_CASES, ids=[c["id"] for c in ALL_CASES])
+def test_case(case):
+    assert run(case) == case["expected"]
+
+
+@pytest.mark.parametrize("case", ALL_CASES, ids=[c["id"] for c in ALL_CASES])
 def test_codes_and_actions_are_known(case):
-    result = run_dos(case) if case["id"].startswith("DOS") else run_pa(case)
+    result = run(case)
     assert result["next_action"] in NEXT_ACTIONS
     for finding in result["findings"]:
         assert finding["carc"] in KNOWN_CARCS, f"invented code {finding['carc']}"

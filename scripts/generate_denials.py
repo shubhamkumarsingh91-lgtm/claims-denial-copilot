@@ -38,6 +38,7 @@ PLANS = {  # synthetic plan names -> payer type
     "MEDICAID-MCO-A": "medicaid",
     "COMMERCIAL-X": "commercial",
 }
+PLAN_TYPES = {"MEDICAID-FFS": "fee_for_service", "MEDICAID-MCO-A": "managed_care", "COMMERCIAL-X": "commercial"}
 COVERED_CODES = ["99213", "99214", "90834", "70551", "27447", "97110"]
 PA_CODES = {"70551", "27447", "97110"}   # need prior authorization (synthetic rule)
 NON_PA_CODES = ["99213", "99214", "90834"]
@@ -61,6 +62,9 @@ CHECKABLE = {
     "RJ-041": ("pa_matcher", "procedure_code_mismatch", "correct_and_resubmit"),
     "RJ-042": ("pa_matcher", "units_exceeded", "request_auth_update"),
     "RJ-043": ("pa_matcher", "provider_mismatch", "request_auth_update"),
+    "RJ-009": ("tpl_check", "other_coverage_primary", "bill_other_coverage"),
+    "RJ-055": ("tpl_check", "other_coverage_primary", "bill_other_coverage"),
+    "RJ-056": ("payer_check", "billed_ffs_member_in_managed_care", "bill_correct_payer"),
 }
 
 
@@ -70,17 +74,15 @@ def load_scenarios() -> list[dict]:
 
 
 def allocate(scenarios: list[dict]) -> list[str]:
-    """3 denials per scenario, 5 per checkable one, then top up checkable ones to 200."""
-    ids = []
-    for s in scenarios:
-        ids += [s["scenario_id"]] * (5 if s["scenario_id"] in CHECKABLE else 3)
+    """3 denials per scenario, then the rest go round-robin to checkable scenarios until 200."""
+    ids = [s["scenario_id"] for s in scenarios for _ in range(3)]
+    if len(ids) > TOTAL_DENIALS:
+        raise ValueError(f"3 per scenario already gives {len(ids)} denials, more than {TOTAL_DENIALS}")
     extra = sorted(CHECKABLE)
     i = 0
     while len(ids) < TOTAL_DENIALS:
         ids.append(extra[i % len(extra)])
         i += 1
-    if len(ids) > TOTAL_DENIALS:
-        raise ValueError(f"allocation gives {len(ids)} denials, more than {TOTAL_DENIALS}")
     return ids
 
 
@@ -147,8 +149,8 @@ def generate(out_dir: Path, seed: int = SEED) -> dict:
             seg_list = [(plan, dos.replace(day=1), None)]
         elif sid == "RJ-051":  # spend-down met a few days after the service
             seg_list = [(plan, dos + timedelta(days=rng.randint(2, 15)), None)]
-        elif sid == "RJ-055":  # other insurance should pay first
-            other_coverage.append({"member_id": member_id, "carrier": "COMMERCIAL-X",
+        elif sid in ("RJ-009", "RJ-055"):  # other insurance should pay first
+            other_coverage.append({"member_id": member_id, "carrier": "OTHER-CARRIER-1",
                                    "coverage_order": "primary", "start_date": "2025-01-01", "end_date": ""})
         elif sid == "RJ-056":  # in managed care on the DOS, billed fee-for-service
             seg_list = [("MEDICAID-MCO-A", date(2025, 1, 1), None)]
@@ -191,7 +193,9 @@ def generate(out_dir: Path, seed: int = SEED) -> dict:
             "checkable_by": check, "expected_finding": finding, "expected_next_action": action,
         })
 
+    plans = [{"plan": p, "payer_type": PLANS[p], "plan_type": PLAN_TYPES[p]} for p in plan_ids]
     tables = {
+        "plans.csv": plans,
         "members.csv": members, "eligibility_segments.csv": segments, "other_coverage.csv": other_coverage,
         "providers.csv": providers, "coverage_rules.csv": coverage_rules,
         "authorizations.csv": auths, "denials.csv": denials,
